@@ -1,9 +1,12 @@
 # `@getskillpack/paperclip-company-kpi`
 
+[![CI](https://github.com/getskillpack/paperclip-company-kpi/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/getskillpack/paperclip-company-kpi/actions/workflows/ci.yml)
+
 Paperclip plugin that rolls up **`cost_event.created`** streams into monthly totals, keeps an **auditable manual ledger** for income and expense lines the API does not know yet, and surfaces **C-level KPI targets** next to the numbers you already trust in the host.
 
 | Resource | Link |
 | --- | --- |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) |
 | Implementation phases | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) |
 | C-level KPI model | [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md) |
 | Publication / channels | [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) |
@@ -24,7 +27,7 @@ If this project helps you, **[star the repository on GitHub](https://github.com/
 - **Phases A–B:** scaffold, CI (`typecheck` / `test` / `build`), rollup + ledger + dashboard — shipped.
 - **Phase E:** C-level targets in `ctx.state` and UI — shipped (see [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md)).
 - **Phase C:** per-agent `budgetMonthlyCents` / `spentMonthlyCents` в dashboard и сверка с месячным rollup (см. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)) — shipped.
-- **Next:** public npm — tracked in Paperclip under the [getskillpack paperclip-company-kpi](https://github.com/getskillpack/paperclip-company-kpi) program; see [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
+- **Next:** первый `npm publish` под scope `@getskillpack` (нужен токен org на стороне board / CI) — см. [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
 
 ## Development
 
@@ -39,7 +42,19 @@ npm run build
 
 The host loads the built artifacts from `dist/` (manifest, worker, UI). Follow your Paperclip version’s plugin installation guide and point it at this package’s `paperclipPlugin` paths after `npm run build`.
 
-Until the package is public on npm, install from a git checkout or release tarball. When `private` is flipped off, `npm install @getskillpack/paperclip-company-kpi` will become the default path — see [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
+**From npm** (после первой публикации в registry):
+
+```bash
+npm install @getskillpack/paperclip-company-kpi
+```
+
+**From git** (до появления пакета в npm или для конкретного тега):
+
+```bash
+npm install github:getskillpack/paperclip-company-kpi#v0.3.0
+```
+
+См. также [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
 
 ## Security notes
 

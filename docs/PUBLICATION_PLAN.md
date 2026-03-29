@@ -13,10 +13,11 @@
 |------|--------|-----------|
 | Фазы A–B (rollup + ledger) | готово | — |
 | Фаза E (C-level targets) | готово в коде | после фазы C — привязка actual к API агентов при согласовании с CTO |
-| Фаза C (budget/spent по агентам) | в плане | приоритет для «серьёзного» OSS-анонса |
-| `package.json` `private: true` | блокирует npm | для публичного npm: `private: false`, `repository`, `bugs`, `homepage`, семвер-политика |
-| Лицензия MIT | ок | проверить `LICENSE` в корне при первом релизе |
-| CI | ок | бейдж в README после стабилизации ветки `main` |
+| Фаза C (budget/spent по агентам) | готово | — |
+| `package.json` публичный пакет | `private: false`, метаданные заполнены | первый `npm publish` — после токена board / CI |
+| Лицензия MIT | ок | `LICENSE` в корне |
+| CI | ок | бейдж в README, workflow `ci.yml` на `main` |
+| `CHANGELOG.md` | ок | Keep a Changelog + совместимость SDK |
 
 ## 3. npm (публичный пакет)
 
