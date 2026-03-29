@@ -65,3 +65,7 @@
 Назначить реализацию **Founding Engineer** (скaffold + MVP Фазы A–B), консультации по host API — **CTO** при расхождении контракта событий `cost_event`.
 
 Фаза E (C-level targets) может вестись CEO/product совместно с FE; автоматический actual — после фазы C и уточнения модели ролей в host.
+
+## 10. Публикация OSS
+
+См. [PUBLICATION_PLAN.md](./PUBLICATION_PLAN.md) (npm, awesome-листы, Discord, лендинг) и [LANDING.md](./LANDING.md) (текст лендинга).
