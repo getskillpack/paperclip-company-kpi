@@ -11,6 +11,7 @@ Paperclip plugin that rolls up **`cost_event.created`** streams into monthly tot
 | Implementation phases | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) |
 | C-level KPI model | [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md) |
 | Publication / channels | [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) |
+| Awesome + Discord copy (§4–§5) | [docs/DISTRIBUTION_AWESOME_AND_CHAT.md](docs/DISTRIBUTION_AWESOME_AND_CHAT.md) |
 | Landing copy (multi-language) | [docs/LANDING.md](docs/LANDING.md) |
 | Static landing source | [docs/site/index.html](docs/site/index.html) |
 

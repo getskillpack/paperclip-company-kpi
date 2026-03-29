@@ -31,12 +31,14 @@
 - Подготовить **короткий англоязычный** one-liner + ссылку на репо (для PR в чужие списки).
 - Кандидаты (уточнять актуальность перед PR): curated-листы вокруг Paperclip / agent runtimes / self-hosted devtools (не спамить: один качественный PR лучше десяти копий).
 - Вести учёт отправленных PR в матрице дистрибуции проекта [skpkg Distribution & Social](/XDE/projects/skpkg-distribution-social) ([XDE-71](/XDE/issues/XDE-71), [XDE-72](/XDE/issues/XDE-72)).
+- **Готовый копирайт и таблица кандидатов:** [docs/DISTRIBUTION_AWESOME_AND_CHAT.md](./DISTRIBUTION_AWESOME_AND_CHAT.md) (§4a–§4b).
 
 ## 5. Discord и чаты
 
 - Не постить в чужие серверы без правил канала; подготовить **2 варианта** сообщения: короткий (одна ссылка + one-liner) и развёрнутый (для «showcase»).
 - Целевые каналы — из исследования CMO в [XDE-72](/XDE/issues/XDE-72) (Paperclip-adjacent, OSS, self-hosted).
 - После релиза npm / стабильного тега — одна волна анонсов, дальше обновления по changelog.
+- **Готовые тексты A/B:** [docs/DISTRIBUTION_AWESOME_AND_CHAT.md](./DISTRIBUTION_AWESOME_AND_CHAT.md) (§5).
 
 ## 6. Документация
 
