@@ -1,6 +1,6 @@
 # Landing copy: Company KPI for Paperclip
 
-Source for GitHub Pages, npm `homepage`, or social snippets. **English** is canonical for OSS; **ES / PT-BR / 中文 / DE** are concise parallel intros for reach.
+Source for GitHub Pages, npm `homepage`, or social snippets. **English** is canonical for OSS; **ES / PT-BR / 中文 / DE** follow the same narrative depth (hero, problem/solution, bullets) as English on [`docs/site/index.html`](./site/index.html).
 
 **Star the repo:** [github.com/getskillpack/paperclip-company-kpi](https://github.com/getskillpack/paperclip-company-kpi) — use the ⭐ button on GitHub (or the embed on [docs/site/index.html](./site/index.html)).
 
@@ -38,6 +38,17 @@ Source for GitHub Pages, npm `homepage`, or social snippets. **English** is cano
 
 **CTA:** [Repositorio](https://github.com/getskillpack/paperclip-company-kpi) · [Documentación](https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/IMPLEMENTATION_PLAN.md) · [Dar estrella en GitHub](https://github.com/getskillpack/paperclip-company-kpi)
 
+### Problema / solución
+
+- **Problema:** el gasto y los KPI de la empresa están en registros, hojas de cálculo y notas — no donde se decide.
+- **Solución:** plugin de Paperclip con rollups mensuales de `cost_event`, libro manual auditable y objetivos ejecutivos junto a los datos del host.
+
+### Viñetas
+
+- Rollups mensuales desde `cost_event.created`.
+- **Libro manual** de ingresos/gastos.
+- **Objetivos ejecutivos** (target, periodo, rol) — ver [C_LEVEL_KPI.md](./C_LEVEL_KPI.md).
+
 ---
 
 ## Português (Brasil)
@@ -46,6 +57,17 @@ Source for GitHub Pages, npm `homepage`, or social snippets. **English** is cano
 **Subtítulo:** Consolide fluxos `cost_event`, use um livro-razão manual e acompanhe metas executivas — um painel para operações e liderança.
 
 **CTA:** [Repositório](https://github.com/getskillpack/paperclip-company-kpi) · [Documentação](https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/IMPLEMENTATION_PLAN.md) · [Estrela no GitHub](https://github.com/getskillpack/paperclip-company-kpi)
+
+### Problema / solução
+
+- **Problema:** gasto de agentes e KPIs em logs, planilhas e anotações — fora do fluxo de decisão.
+- **Solução:** plugin Paperclip que agrega `cost_event` em rollups mensais, mantém razão manual auditável e metas de liderança ao lado dos números do host.
+
+### Marcadores
+
+- Rollups mensais a partir de `cost_event.created`.
+- **Razão manual** de receitas/despesas.
+- **Metas executivas** — ver [C_LEVEL_KPI.md](./C_LEVEL_KPI.md).
 
 ---
 
@@ -56,6 +78,17 @@ Source for GitHub Pages, npm `homepage`, or social snippets. **English** is cano
 
 **行动：** [代码仓库](https://github.com/getskillpack/paperclip-company-kpi) · [实现说明](https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/IMPLEMENTATION_PLAN.md) · [在 GitHub 点星](https://github.com/getskillpack/paperclip-company-kpi)
 
+### 问题 / 方案
+
+- **问题：** 智能体支出与公司 KPI 分散在日志、表格和临时笔记中，不在决策现场。
+- **方案：** Paperclip 插件将 `cost_event` 汇总为月度 rollup，维护可审计手工台账，并在宿主可信数据旁展示高管目标。
+
+### 要点
+
+- 基于 `cost_event.created` 的月度成本汇总。
+- **手工台账** 收入/支出行。
+- **高管 KPI 目标** — 见 [C_LEVEL_KPI.md](./C_LEVEL_KPI.md)。
+
 ---
 
 ## Deutsch
@@ -64,6 +97,17 @@ Source for GitHub Pages, npm `homepage`, or social snippets. **English** is cano
 **Subhead:** `cost_event`-Ströme zusammenführen, ein manuelles Journal pflegen und Führungsziele tracken — ein Dashboard für Betrieb und Leadership.
 
 **CTA:** [Repository](https://github.com/getskillpack/paperclip-company-kpi) · [Implementierungsplan](https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/IMPLEMENTATION_PLAN.md) · [Star auf GitHub](https://github.com/getskillpack/paperclip-company-kpi)
+
+### Problem / Lösung
+
+- **Problem:** Agenten-Ausgaben und Unternehmens-KPIs liegen in Logs, Tabellen und Notizen — nicht dort, wo entschieden wird.
+- **Lösung:** Paperclip-Plugin mit monatlichen `cost_event`-Rollups, auditierbarem Journal und Führungszielen neben den Host-Zahlen.
+
+### Stichpunkte
+
+- Monatliche Kosten-Rollups aus `cost_event.created`.
+- **Manuelles Journal** für Einnahmen/Ausgaben.
+- **Executive-KPI-Ziele** — siehe [C_LEVEL_KPI.md](./C_LEVEL_KPI.md).
 
 ---
 

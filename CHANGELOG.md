@@ -18,6 +18,7 @@
 - `readDisplayCurrency` / validation for stored currency codes in `kpi-state` (invalid values fall back to `USD`).
 - `DashboardParams` documented as an external-only integrator contract (not used inside the package).
 - Currency amounts in the widget use `Intl.NumberFormat("en-US", …)` for consistent English formatting.
+- `docs/site/index.html`: ES / PT / ZH / DE panels now include the same depth as English (problem/solution, feature bullets, install sketch); git install pin updated to `v0.3.4`.
 
 ## [0.3.3] — 2026-03-29
 
