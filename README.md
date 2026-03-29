@@ -6,12 +6,13 @@ Paperclip plugin that rolls up **`cost_event.created`** streams into monthly tot
 
 | Resource | Link |
 | --- | --- |
+| **Landing (GitHub Pages)** | [getskillpack.github.io/paperclip-company-kpi](https://getskillpack.github.io/paperclip-company-kpi/) — enable **Pages → GitHub Actions** in repo settings after the first workflow merge (see [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md)). |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) |
 | Implementation phases | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) |
 | C-level KPI model | [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md) |
 | Publication / channels | [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) |
 | Landing copy (multi-language) | [docs/LANDING.md](docs/LANDING.md) |
-| Static landing preview | [docs/site/index.html](docs/site/index.html) |
+| Static landing source | [docs/site/index.html](docs/site/index.html) |
 
 If this project helps you, **[star the repository on GitHub](https://github.com/getskillpack/paperclip-company-kpi)** — it makes the plugin easier for other teams to discover.
 
@@ -27,7 +28,7 @@ If this project helps you, **[star the repository on GitHub](https://github.com/
 - **Phases A–B:** scaffold, CI (`typecheck` / `test` / `build`), rollup + ledger + dashboard — shipped.
 - **Phase E:** C-level targets in `ctx.state` and UI — shipped (see [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md)).
 - **Phase C:** per-agent `budgetMonthlyCents` / `spentMonthlyCents` в dashboard и сверка с месячным rollup (см. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)) — shipped.
-- **Next:** добавлен workflow [Publish to npm](.github/workflows/publish.yml) на push тега `v*.*.*`; нужен секрет репозитория **`NPM_TOKEN`** (automation token npm org `@getskillpack`) — см. [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
+- **Next (board):** секрет **`NPM_TOKEN`** + push тега для [Publish to npm](.github/workflows/publish.yml); **GitHub Pages** → источник GitHub Actions + поле Website в настройках репо — см. [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) §10.
 
 ## Development
 
@@ -51,7 +52,7 @@ npm install @getskillpack/paperclip-company-kpi
 **From git** (до появления пакета в npm или для конкретного тега):
 
 ```bash
-npm install github:getskillpack/paperclip-company-kpi#v0.3.1
+npm install github:getskillpack/paperclip-company-kpi#v0.3.2
 ```
 
 См. также [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).

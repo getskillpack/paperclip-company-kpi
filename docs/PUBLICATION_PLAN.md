@@ -23,7 +23,7 @@
 
 1. Решение board: публиковать ли scope `@getskillpack` из org npm или только GitHub Releases + установка по git/tag.
 2. Перед `npm publish`: убрать `private`, заполнить метаданные, `npm pack --dry-run`, теги git `v0.x.y`.
-3. **CI:** workflow [`.github/workflows/publish.yml`](https://github.com/getskillpack/paperclip-company-kpi/blob/main/.github/workflows/publish.yml) запускается на push тега `v*.*.*`; в секретах репозитория GitHub нужен **`NPM_TOKEN`** (Granular или automation token с правом publish для `@getskillpack/paperclip-company-kpi`). После настройки: `git tag v0.3.1 && git push origin v0.3.1`.
+3. **CI:** workflow [`.github/workflows/publish.yml`](https://github.com/getskillpack/paperclip-company-kpi/blob/main/.github/workflows/publish.yml) запускается на push тега `v*.*.*`; в секретах репозитория GitHub нужен **`NPM_TOKEN`** (Granular или automation token с правом publish для `@getskillpack/paperclip-company-kpi`). После настройки: `git tag v0.3.2 && git push origin v0.3.2`.
 4. В README — одна команда установки и ссылка на раздел «Установка в Paperclip» (локальный путь vs npm).
 
 ## 4. Awesome-листы и каталоги
@@ -46,8 +46,13 @@
 ## 7. Лендинг
 
 - Источник копирайта: [LANDING.md](./LANDING.md) (мультиязычные блоки + CTA на звезду GitHub).
-- Статическая страница без сборки: [docs/site/index.html](./site/index.html) — можно опубликовать через GitHub Pages (корень сайта → `docs/site/` или настроить workflow).
-- Варианты размещения: GitHub Pages, отдельная страница на сайте skpkg (если появится), или `homepage` в npm — выбор board/CMO.
+- Статическая страница без сборки: [site/index.html](./site/index.html).
+- **GitHub Pages (реализовано в репо):** workflow [`.github/workflows/pages.yml`](https://github.com/getskillpack/paperclip-company-kpi/blob/main/.github/workflows/pages.yml) деплоит содержимое `docs/site/` на Pages при push в `main`. Ожидаемый публичный URL: `https://getskillpack.github.io/paperclip-company-kpi/`.
+- **Однократно board (настройки репозитория GitHub):**
+  1. **Settings → Pages → Build and deployment:** источник **GitHub Actions** (не «Deploy from a branch»), иначе workflow не подхватится.
+  2. После первого успешного прогона workflow — **Settings → General → Website** (поле в описании репозитория): указать тот же URL лендинга.
+- `package.json` поле `homepage` указывает на этот URL (npm и GitHub показывают ссылку).
+- Варианты размещения помимо Pages: отдельная страница на сайте skpkg (если появится) — по решению board/CMO.
 - Минимальный MVP лендинга: один экран — проблема, решение, установка, ссылка на репозиторий и видимый star-widget / ссылка «Star on GitHub».
 
 ## 8. Роли
@@ -64,3 +69,24 @@
 
 1. Закрыть **фазу C** или явно пометить в README «beta: без сверки по агентам» — затем открыть npm и внешние PR в awesome.
 2. Параллельно CMO обновляет матрицу под этот репозиторий в рамках [XDE-72](/XDE/issues/XDE-72).
+
+## 10. Чеклист board ([XDE-109](/XDE/issues/XDE-109))
+
+Выполняется человеком board (секреты и настройки org/repo).
+
+### npm
+
+1. В GitHub: **Settings → Secrets and variables → Actions** — секрет **`NPM_TOKEN`** (automation / granular token с правом **publish** для `@getskillpack/paperclip-company-kpi`).
+2. Убедиться, что пакет в npm org **@getskillpack** разрешён к публикации (доступ аккаунта).
+3. После merge в `main` и bump версии: `git tag v0.3.2 && git push origin v0.3.2` (или актуальный `vX.Y.Z`) — workflow [Publish to npm](https://github.com/getskillpack/paperclip-company-kpi/blob/main/.github/workflows/publish.yml) запускается на push тега `v*.*.*`.
+4. Проверить run **Publish to npm** и страницу пакета на registry.
+
+### GitHub Pages и ссылка в репо
+
+1. **Settings → Pages:** источник **GitHub Actions**.
+2. После merge ветки с `.github/workflows/pages.yml` — дождаться успешного **Deploy site to GitHub Pages**.
+3. **Settings → General:** в поле **Website** указать `https://getskillpack.github.io/paperclip-company-kpi/`.
+
+### Пропиарить (см. также задачу CMO)
+
+Каналы и тексты — §4–§5 выше и матрица [XDE-72](/XDE/issues/XDE-72); исполнение — [XDE-71](/XDE/issues/XDE-71).

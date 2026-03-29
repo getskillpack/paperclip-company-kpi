@@ -1,6 +1,6 @@
 {
   "name": "@getskillpack/paperclip-company-kpi",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "private": false,
   "publishConfig": {
@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/getskillpack/paperclip-company-kpi/issues"
   },
-  "homepage": "https://github.com/getskillpack/paperclip-company-kpi",
+  "homepage": "https://getskillpack.github.io/paperclip-company-kpi/",
   "files": [
     "dist",
     "README.md",
