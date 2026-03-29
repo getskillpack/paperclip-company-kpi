@@ -27,7 +27,7 @@ If this project helps you, **[star the repository on GitHub](https://github.com/
 - **Phases A–B:** scaffold, CI (`typecheck` / `test` / `build`), rollup + ledger + dashboard — shipped.
 - **Phase E:** C-level targets in `ctx.state` and UI — shipped (see [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md)).
 - **Phase C:** per-agent `budgetMonthlyCents` / `spentMonthlyCents` в dashboard и сверка с месячным rollup (см. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)) — shipped.
-- **Next:** первый `npm publish` под scope `@getskillpack` (нужен токен org на стороне board / CI) — см. [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
+- **Next:** добавлен workflow [Publish to npm](.github/workflows/publish.yml) на push тега `v*.*.*`; нужен секрет репозитория **`NPM_TOKEN`** (automation token npm org `@getskillpack`) — см. [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
 
 ## Development
 
@@ -51,7 +51,7 @@ npm install @getskillpack/paperclip-company-kpi
 **From git** (до появления пакета в npm или для конкретного тега):
 
 ```bash
-npm install github:getskillpack/paperclip-company-kpi#v0.3.0
+npm install github:getskillpack/paperclip-company-kpi#v0.3.1
 ```
 
 См. также [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).

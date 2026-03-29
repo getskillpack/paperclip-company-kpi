@@ -23,7 +23,8 @@
 
 1. Решение board: публиковать ли scope `@getskillpack` из org npm или только GitHub Releases + установка по git/tag.
 2. Перед `npm publish`: убрать `private`, заполнить метаданные, `npm pack --dry-run`, теги git `v0.x.y`.
-3. В README — одна команда установки и ссылка на раздел «Установка в Paperclip» (локальный путь vs npm).
+3. **CI:** workflow [`.github/workflows/publish.yml`](https://github.com/getskillpack/paperclip-company-kpi/blob/main/.github/workflows/publish.yml) запускается на push тега `v*.*.*`; в секретах репозитория GitHub нужен **`NPM_TOKEN`** (Granular или automation token с правом publish для `@getskillpack/paperclip-company-kpi`). После настройки: `git tag v0.3.1 && git push origin v0.3.1`.
+4. В README — одна команда установки и ссылка на раздел «Установка в Paperclip» (локальный путь vs npm).
 
 ## 4. Awesome-листы и каталоги
 

@@ -1,8 +1,12 @@
 {
   "name": "@getskillpack/paperclip-company-kpi",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "description": "Paperclip plugin: company KPI / cost rollup + manual ledger",
   "repository": {
     "type": "git",

@@ -6,6 +6,13 @@
 
 Плагин собирается с **`@paperclipai/plugin-sdk`** версии, указанной в `package.json` (см. devDependencies). Требуемые capabilities перечислены в `src/manifest.ts` (`events.subscribe`, `plugin.state.read`, `plugin.state.write`, `agents.read`).
 
+## [0.3.1] — 2026-03-29
+
+### Added
+
+- GitHub Actions [`publish.yml`](.github/workflows/publish.yml): публикация в npm при push тега `v*.*.*` (секрет репозитория `NPM_TOKEN` с правом publish для scope `@getskillpack`).
+- `publishConfig.access: public` для scoped-пакета.
+
 ## [0.3.0] — 2026-03-29
 
 ### Added
@@ -23,4 +30,5 @@
 
 - Rollup по `cost_event.created`, ручной журнал, виджет dashboard, цели C-level (фазы A–B, E).
 
+[0.3.1]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.1
 [0.3.0]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.0
