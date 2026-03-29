@@ -1,6 +1,6 @@
 import { usePluginAction, usePluginData, type PluginWidgetProps } from "@paperclipai/plugin-sdk/ui";
 import { useCallback, useState } from "react";
-import type { DashboardPayload, ManualLedgerEntryV1 } from "../kpi-types.js";
+import type { DashboardPayload, ExecutiveKpiTargetV1, ManualLedgerEntryV1 } from "../kpi-types.js";
 
 function formatCents(cents: number, currency: string): string {
   const n = cents / 100;
@@ -19,12 +19,26 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
   );
   const addEntry = usePluginAction("addManualLedgerEntry");
   const deleteEntry = usePluginAction("deleteManualLedgerEntry");
+  const upsertExecTarget = usePluginAction("upsertExecutiveKpiTarget");
+  const deleteExecTarget = usePluginAction("deleteExecutiveKpiTarget");
 
   const [kind, setKind] = useState<"expense" | "income">("expense");
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [busy, setBusy] = useState(false);
+
+  const [exOwner, setExOwner] = useState("");
+  const [exRoleTag, setExRoleTag] = useState<ExecutiveKpiTargetV1["ownerRoleTag"] | "">("");
+  const [exKpi, setExKpi] = useState("");
+  const [exTarget, setExTarget] = useState("");
+  const [exUnit, setExUnit] = useState<ExecutiveKpiTargetV1["unit"]>("count");
+  const [exPeriod, setExPeriod] = useState(() => {
+    const d = new Date();
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  });
+  const [exActual, setExActual] = useState("");
+  const [exNotes, setExNotes] = useState("");
 
   const onAdd = useCallback(async () => {
     if (!companyId) return;
@@ -64,6 +78,69 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       }
     },
     [companyId, deleteEntry, refresh],
+  );
+
+  const onAddExecTarget = useCallback(async () => {
+    if (!companyId) return;
+    const tv = Number.parseFloat(exTarget.replace(",", "."));
+    if (!exOwner.trim() || !exKpi.trim() || !exPeriod.trim() || !Number.isFinite(tv)) return;
+    let actualValue: number | null | undefined;
+    if (exActual.trim() !== "") {
+      const a = Number.parseFloat(exActual.replace(",", "."));
+      if (!Number.isFinite(a)) return;
+      actualValue = a;
+    }
+    const now = new Date().toISOString();
+    const target: ExecutiveKpiTargetV1 = {
+      id: crypto.randomUUID(),
+      ownerLabel: exOwner.trim(),
+      ownerRoleTag: exRoleTag || undefined,
+      kpiLabel: exKpi.trim(),
+      targetValue: tv,
+      unit: exUnit,
+      periodLabel: exPeriod.trim(),
+      actualValue,
+      notes: exNotes.trim() || undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setBusy(true);
+    try {
+      await upsertExecTarget({ companyId, target });
+      setExKpi("");
+      setExTarget("");
+      setExActual("");
+      setExNotes("");
+      refresh();
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    companyId,
+    exActual,
+    exKpi,
+    exNotes,
+    exOwner,
+    exPeriod,
+    exRoleTag,
+    exTarget,
+    exUnit,
+    refresh,
+    upsertExecTarget,
+  ]);
+
+  const onDeleteExec = useCallback(
+    async (id: string) => {
+      if (!companyId) return;
+      setBusy(true);
+      try {
+        await deleteExecTarget({ companyId, id });
+        refresh();
+      } finally {
+        setBusy(false);
+      }
+    },
+    [companyId, deleteExecTarget, refresh],
   );
 
   if (!companyId) {
@@ -135,6 +212,111 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
 
       <section>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Цели C-level (задаёт CEO / board)</div>
+        <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
+          Реестр KPI по ролям: target и ручной факт (MVP). См.{" "}
+          <a href="https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/C_LEVEL_KPI.md" target="_blank" rel="noreferrer">
+            docs/C_LEVEL_KPI.md
+          </a>
+          .
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-end", marginBottom: 8 }}>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Роль / владелец</span>
+            <input value={exOwner} onChange={(e) => setExOwner(e.target.value)} placeholder="CTO" style={{ width: 120 }} />
+          </label>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Тег</span>
+            <select
+              value={exRoleTag}
+              onChange={(e) => setExRoleTag(e.target.value as ExecutiveKpiTargetV1["ownerRoleTag"] | "")}
+            >
+              <option value="">—</option>
+              <option value="cto">cto</option>
+              <option value="cmo">cmo</option>
+              <option value="cfo">cfo</option>
+              <option value="coo">coo</option>
+              <option value="ceo">ceo</option>
+              <option value="other">other</option>
+            </select>
+          </label>
+          <label style={{ display: "grid", gap: 2, flex: "1 1 140px" }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>KPI</span>
+            <input value={exKpi} onChange={(e) => setExKpi(e.target.value)} placeholder="Закрытых тикетов / нед" />
+          </label>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Target</span>
+            <input value={exTarget} onChange={(e) => setExTarget(e.target.value)} placeholder="12" style={{ width: 72 }} />
+          </label>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Единица</span>
+            <select value={exUnit} onChange={(e) => setExUnit(e.target.value as ExecutiveKpiTargetV1["unit"])}>
+              <option value="count">count</option>
+              <option value="cents">cents</option>
+              <option value="percent">percent</option>
+              <option value="days">days</option>
+              <option value="score">score</option>
+            </select>
+          </label>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Период</span>
+            <input value={exPeriod} onChange={(e) => setExPeriod(e.target.value)} placeholder="2026-03" style={{ width: 88 }} />
+          </label>
+          <label style={{ display: "grid", gap: 2 }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Факт (опц.)</span>
+            <input value={exActual} onChange={(e) => setExActual(e.target.value)} style={{ width: 72 }} />
+          </label>
+          <label style={{ display: "grid", gap: 2, flex: "1 1 160px" }}>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Заметка</span>
+            <input value={exNotes} onChange={(e) => setExNotes(e.target.value)} />
+          </label>
+          <button type="button" disabled={busy} onClick={() => void onAddExecTarget()}>
+            Добавить цель
+          </button>
+        </div>
+        {dash.executiveTargets.length === 0 ? (
+          <div style={{ color: "#666" }}>Целей пока нет.</div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+                <th style={{ padding: "4px 8px" }}>Владелец</th>
+                <th style={{ padding: "4px 8px" }}>KPI</th>
+                <th style={{ padding: "4px 8px" }}>Период</th>
+                <th style={{ padding: "4px 8px" }}>Target</th>
+                <th style={{ padding: "4px 8px" }}>Факт</th>
+                <th style={{ padding: "4px 8px" }} />
+              </tr>
+            </thead>
+            <tbody>
+              {dash.executiveTargets.map((row) => (
+                <tr key={row.id} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={{ padding: "4px 8px" }}>
+                    {row.ownerLabel}
+                    {row.ownerRoleTag ? <span style={{ color: "#888", fontSize: "0.75rem" }}> ({row.ownerRoleTag})</span> : null}
+                  </td>
+                  <td style={{ padding: "4px 8px" }}>
+                    {row.kpiLabel}
+                    {row.notes ? <div style={{ fontSize: "0.75rem", color: "#666" }}>{row.notes}</div> : null}
+                  </td>
+                  <td style={{ padding: "4px 8px" }}>{row.periodLabel}</td>
+                  <td style={{ padding: "4px 8px" }}>{formatKpiValue(row.targetValue, row.unit, dash.displayCurrency)}</td>
+                  <td style={{ padding: "4px 8px" }}>
+                    {row.actualValue == null ? "—" : formatKpiValue(row.actualValue, row.unit, dash.displayCurrency)}
+                  </td>
+                  <td style={{ padding: "4px 8px" }}>
+                    <button type="button" disabled={busy} onClick={() => void onDeleteExec(row.id)}>
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section>
         <div style={{ fontWeight: 600, marginBottom: 6 }}>Ручной журнал</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-end", marginBottom: 8 }}>
           <label style={{ display: "grid", gap: 2 }}>
@@ -194,6 +376,16 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
     </div>
   );
+}
+
+function formatKpiValue(value: number, unit: ExecutiveKpiTargetV1["unit"], displayCurrency: string): string {
+  if (unit === "cents") {
+    return formatCents(value, displayCurrency);
+  }
+  if (unit === "percent") {
+    return `${value}%`;
+  }
+  return String(value);
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

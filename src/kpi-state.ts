@@ -1,7 +1,8 @@
 import type { PluginStateClient } from "@paperclipai/plugin-sdk";
-import type { CostRollupMonthV1, ManualLedgerEntryV1 } from "./kpi-types.js";
+import type { CostRollupMonthV1, ExecutiveKpiTargetV1, ManualLedgerEntryV1 } from "./kpi-types.js";
 
 export const MANUAL_LEDGER_KEY = "manual_ledger_v1";
+export const EXECUTIVE_KPI_TARGETS_KEY = "executive_kpi_targets_v1";
 export const COST_ROLLUP_INDEX_KEY = "cost_rollup_index_v1";
 export const DISPLAY_CURRENCY_KEY = "display_currency_v1";
 export const COST_ROLLUP_KEY_PREFIX = "cost_rollup_v1:";
@@ -57,6 +58,23 @@ export async function writeManualLedger(
   entries: ManualLedgerEntryV1[],
 ): Promise<void> {
   await state.set(companyStateKey(companyId, MANUAL_LEDGER_KEY), entries);
+}
+
+export async function readExecutiveKpiTargets(
+  state: PluginStateClient,
+  companyId: string,
+): Promise<ExecutiveKpiTargetV1[]> {
+  const raw = await state.get(companyStateKey(companyId, EXECUTIVE_KPI_TARGETS_KEY));
+  if (!Array.isArray(raw)) return [];
+  return raw as ExecutiveKpiTargetV1[];
+}
+
+export async function writeExecutiveKpiTargets(
+  state: PluginStateClient,
+  companyId: string,
+  targets: ExecutiveKpiTargetV1[],
+): Promise<void> {
+  await state.set(companyStateKey(companyId, EXECUTIVE_KPI_TARGETS_KEY), targets);
 }
 
 export async function readRollupIndex(state: PluginStateClient, companyId: string): Promise<string[]> {

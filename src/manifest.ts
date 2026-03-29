@@ -3,7 +3,7 @@ import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 const manifest: PaperclipPluginManifestV1 = {
   id: "getskillpack.paperclip-company-kpi",
   apiVersion: 1,
-  version: "0.1.0",
+  version: "0.2.0",
   displayName: "Company KPI",
   description: "Сводка cost-событий и ручной журнал доходов/расходов компании.",
   author: "getskillpack",

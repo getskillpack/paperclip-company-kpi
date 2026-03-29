@@ -1,14 +1,16 @@
 import { definePlugin, runWorker, type PluginEvent } from "@paperclipai/plugin-sdk";
-import type { DashboardPayload, ManualLedgerEntryV1 } from "./kpi-types.js";
+import type { DashboardPayload, ExecutiveKpiTargetV1, ManualLedgerEntryV1 } from "./kpi-types.js";
 import {
   DISPLAY_CURRENCY_KEY,
   addRollupMonthToIndex,
   companyStateKey,
   emptyRollup,
   parseRange,
+  readExecutiveKpiTargets,
   readManualLedger,
   readMonthRollup,
   readRollupIndex,
+  writeExecutiveKpiTargets,
   writeManualLedger,
   writeMonthRollup,
   yearMonthFromIso,
@@ -32,6 +34,29 @@ function readCostFromPayload(payload: unknown): {
     return { costCents, occurredAt: occurred };
   }
   return null;
+}
+
+const EXEC_OWNER_TAGS = new Set<string>(["cto", "cmo", "cfo", "coo", "ceo", "other"]);
+const EXEC_UNITS = new Set<ExecutiveKpiTargetV1["unit"]>(["count", "cents", "percent", "days", "score"]);
+
+function isExecutiveKpiTarget(x: unknown): x is ExecutiveKpiTargetV1 {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  if (typeof o.id !== "string" || !o.id) return false;
+  if (typeof o.ownerLabel !== "string" || !o.ownerLabel.trim()) return false;
+  if (typeof o.kpiLabel !== "string" || !o.kpiLabel.trim()) return false;
+  if (typeof o.targetValue !== "number" || !Number.isFinite(o.targetValue)) return false;
+  if (typeof o.unit !== "string" || !EXEC_UNITS.has(o.unit as ExecutiveKpiTargetV1["unit"])) return false;
+  if (typeof o.periodLabel !== "string" || !o.periodLabel.trim()) return false;
+  if (typeof o.createdAt !== "string" || typeof o.updatedAt !== "string") return false;
+  if (o.ownerRoleTag !== undefined && o.ownerRoleTag !== null) {
+    if (typeof o.ownerRoleTag !== "string" || !EXEC_OWNER_TAGS.has(o.ownerRoleTag)) {
+      return false;
+    }
+  }
+  if (o.actualValue !== undefined && o.actualValue !== null && typeof o.actualValue !== "number") return false;
+  if (o.notes !== undefined && o.notes !== null && typeof o.notes !== "string") return false;
+  return true;
 }
 
 function isManualEntry(x: unknown): x is ManualLedgerEntryV1 {
@@ -108,6 +133,13 @@ const plugin = definePlugin({
         else manualExpenseCents += e.amountCents;
       }
 
+      const executiveTargets = await readExecutiveKpiTargets(ctx.state, companyId);
+      executiveTargets.sort((a, b) => {
+        const byOwner = a.ownerLabel.localeCompare(b.ownerLabel);
+        if (byOwner !== 0) return byOwner;
+        return a.periodLabel.localeCompare(b.periodLabel) || a.kpiLabel.localeCompare(b.kpiLabel);
+      });
+
       const body: DashboardPayload = {
         ok: true,
         companyId,
@@ -115,6 +147,7 @@ const plugin = definePlugin({
         displayCurrency,
         costRollups,
         manualEntries,
+        executiveTargets,
         totals: {
           costFromRollupsCents,
           manualIncomeCents,
@@ -165,6 +198,46 @@ const plugin = definePlugin({
       }
       await writeMonthRollup(ctx.state, companyId, yearMonth, emptyRollup());
       return { ok: true as const, yearMonth };
+    });
+
+    ctx.actions.register("upsertExecutiveKpiTarget", async (params) => {
+      const companyId = typeof params.companyId === "string" ? params.companyId : "";
+      const targetRaw = params.target;
+      if (!companyId) throw new Error("companyId is required");
+      if (!isExecutiveKpiTarget(targetRaw)) {
+        throw new Error("target must be a valid ExecutiveKpiTargetV1");
+      }
+      const now = new Date().toISOString();
+      const list = await readExecutiveKpiTargets(ctx.state, companyId);
+      const idx = list.findIndex((t) => t.id === targetRaw.id);
+      const merged: ExecutiveKpiTargetV1 =
+        idx >= 0
+          ? {
+              ...targetRaw,
+              createdAt: list[idx].createdAt,
+              updatedAt: now,
+            }
+          : { ...targetRaw, createdAt: targetRaw.createdAt || now, updatedAt: now };
+      if (idx >= 0) {
+        list[idx] = merged;
+      } else {
+        list.push(merged);
+      }
+      await writeExecutiveKpiTargets(ctx.state, companyId, list);
+      return { ok: true as const, id: merged.id };
+    });
+
+    ctx.actions.register("deleteExecutiveKpiTarget", async (params) => {
+      const companyId = typeof params.companyId === "string" ? params.companyId : "";
+      const id = typeof params.id === "string" ? params.id : "";
+      if (!companyId || !id) throw new Error("companyId and id are required");
+      const list = await readExecutiveKpiTargets(ctx.state, companyId);
+      const next = list.filter((t) => t.id !== id);
+      if (next.length === list.length) {
+        return { ok: false as const, reason: "not_found" as const };
+      }
+      await writeExecutiveKpiTargets(ctx.state, companyId, next);
+      return { ok: true as const };
     });
 
     ctx.data.register("health", async () => {

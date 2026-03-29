@@ -48,6 +48,7 @@
 2. **Фаза B — MVP данные:** подписка на `cost_event.created`, запись агрегатов в `ctx.state`, ручные проводки через actions, простая таблица в UI.
 3. **Фаза C — сверка с агентами:** панель по агентам (budget/spent из API), предупреждения при расхождении с rollup (документировать допущения).
 4. **Фаза D — отчётность:** экспорт CSV, email/webhook вне скоупа до запроса board.
+5. **Фаза E — цели C-level:** реестр целей, которые CEO выставляет руководителям (роль/метка, название KPI, target, период, ручной actual); см. [docs/C_LEVEL_KPI.md](./C_LEVEL_KPI.md). Actions `upsertExecutiveKpiTarget` / `deleteExecutiveKpiTarget`, отображение в dashboard widget.
 
 ## 7. Тестирование
 
@@ -62,3 +63,5 @@
 ## 9. Следующий шаг после утверждения плана
 
 Назначить реализацию **Founding Engineer** (скaffold + MVP Фазы A–B), консультации по host API — **CTO** при расхождении контракта событий `cost_event`.
+
+Фаза E (C-level targets) может вестись CEO/product совместно с FE; автоматический actual — после фазы C и уточнения модели ролей в host.

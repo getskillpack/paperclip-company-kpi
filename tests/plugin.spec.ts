@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
-import { COST_ROLLUP_KEY_PREFIX, COST_ROLLUP_INDEX_KEY, MANUAL_LEDGER_KEY, companyStateKey } from "../src/kpi-state.js";
+import {
+  COST_ROLLUP_KEY_PREFIX,
+  COST_ROLLUP_INDEX_KEY,
+  EXECUTIVE_KPI_TARGETS_KEY,
+  MANUAL_LEDGER_KEY,
+  companyStateKey,
+} from "../src/kpi-state.js";
 
 const companyId = "11111111-1111-1111-1111-111111111111";
 
@@ -96,5 +102,36 @@ describe("company-kpi plugin", () => {
     await plugin.definition.setup(harness.ctx);
     const h = await harness.getData<{ status: string }>("health", {});
     expect(h.status).toBe("ok");
+  });
+
+  it("upserts and deletes executive KPI targets and returns them on dashboard", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    await plugin.definition.setup(harness.ctx);
+
+    const now = "2026-03-29T12:00:00.000Z";
+    const target = {
+      id: "exec-1",
+      ownerLabel: "CTO",
+      ownerRoleTag: "cto" as const,
+      kpiLabel: "Issues closed / week",
+      targetValue: 10,
+      unit: "count" as const,
+      periodLabel: "2026-03",
+      actualValue: 7,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await harness.performAction("upsertExecutiveKpiTarget", { companyId, target });
+
+    const dash = await harness.getData<{ executiveTargets: { id: string; kpiLabel: string }[] }>("companyKpiDashboard", {
+      companyId,
+    });
+    expect(dash.executiveTargets).toHaveLength(1);
+    expect(dash.executiveTargets[0].kpiLabel).toBe("Issues closed / week");
+
+    await harness.performAction("deleteExecutiveKpiTarget", { companyId, id: "exec-1" });
+    const stored = harness.getState(companyStateKey(companyId, EXECUTIVE_KPI_TARGETS_KEY)) as unknown[];
+    expect(stored).toHaveLength(0);
   });
 });
