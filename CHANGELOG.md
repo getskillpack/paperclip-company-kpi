@@ -6,6 +6,19 @@
 
 Плагин собирается с **`@paperclipai/plugin-sdk`** версии, указанной в `package.json` (см. devDependencies). Требуемые capabilities перечислены в `src/manifest.ts` (`events.subscribe`, `plugin.state.read`, `plugin.state.write`, `agents.read`).
 
+## [0.3.4] — 2026-03-29
+
+### Added
+
+- Action `setCompanyKpiDisplayCurrency` — persists ISO 4217 code to `display_currency_v1` (company state).
+- Dashboard widget: display currency control (presets + custom) with Apply.
+
+### Changed
+
+- `readDisplayCurrency` / validation for stored currency codes in `kpi-state` (invalid values fall back to `USD`).
+- `DashboardParams` documented as an external-only integrator contract (not used inside the package).
+- Currency amounts in the widget use `Intl.NumberFormat("en-US", …)` for consistent English formatting.
+
 ## [0.3.3] — 2026-03-29
 
 ### Added

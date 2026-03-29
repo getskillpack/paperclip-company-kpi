@@ -9,6 +9,7 @@ import {
   COST_ROLLUP_KEY_PREFIX,
   COST_ROLLUP_INDEX_KEY,
   DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS,
+  DISPLAY_CURRENCY_KEY,
   EXECUTIVE_KPI_TARGETS_KEY,
   MANUAL_LEDGER_KEY,
   companyStateKey,
@@ -176,6 +177,22 @@ describe("company-kpi plugin", () => {
     });
     expect(dash.reconciliation.mismatchWarning).not.toBeNull();
     expect(dash.reconciliation.mismatchWarning).toMatch(/Mismatch for/);
+  });
+
+  it("persists display currency via setCompanyKpiDisplayCurrency", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
+    harness.seed({ agents: [] });
+    await plugin.definition.setup(harness.ctx);
+
+    const dash0 = await harness.getData<{ displayCurrency: string }>("companyKpiDashboard", { companyId });
+    expect(dash0.displayCurrency).toBe("USD");
+
+    await harness.performAction("setCompanyKpiDisplayCurrency", { companyId, currencyCode: "eur" });
+    const stored = harness.getState(companyStateKey(companyId, DISPLAY_CURRENCY_KEY));
+    expect(stored).toBe("EUR");
+
+    const dash1 = await harness.getData<{ displayCurrency: string }>("companyKpiDashboard", { companyId });
+    expect(dash1.displayCurrency).toBe("EUR");
   });
 
   it("adds and deletes manual ledger entries", async () => {

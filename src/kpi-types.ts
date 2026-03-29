@@ -22,6 +22,10 @@ export type CostRollupMonthV1 = {
 export type CostRollupDayV1 = CostRollupMonthV1;
 export type CostRollupHourV1 = CostRollupMonthV1;
 
+/**
+ * External-only: query shape for the `companyKpiDashboard` data provider (hosts, deep links).
+ * Not referenced inside this package; kept as a stable integrator contract.
+ */
 export type DashboardParams = {
   companyId?: string;
   rangeFrom?: string;

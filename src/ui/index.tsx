@@ -1,11 +1,13 @@
 import { usePluginAction, usePluginData, type PluginWidgetProps } from "@paperclipai/plugin-sdk/ui";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { DashboardPayload, ExecutiveKpiTargetV1, ManualLedgerEntryV1 } from "../kpi-types.js";
+
+const PRESET_DISPLAY_CURRENCIES = ["USD", "EUR", "GBP", "CHF", "JPY", "PLN", "CZK"] as const;
 
 function formatCents(cents: number, currency: string): string {
   const n = cents / 100;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
   } catch {
     return `${n.toFixed(2)} ${currency}`;
   }
@@ -21,6 +23,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
   const deleteEntry = usePluginAction("deleteManualLedgerEntry");
   const upsertExecTarget = usePluginAction("upsertExecutiveKpiTarget");
   const deleteExecTarget = usePluginAction("deleteExecutiveKpiTarget");
+  const setDisplayCurrency = usePluginAction("setCompanyKpiDisplayCurrency");
 
   const [kind, setKind] = useState<"expense" | "income">("expense");
   const [amount, setAmount] = useState("");
@@ -39,6 +42,9 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
   });
   const [exActual, setExActual] = useState("");
   const [exNotes, setExNotes] = useState("");
+
+  const [displayCurrencyDraft, setDisplayCurrencyDraft] = useState("USD");
+  const [displayCurrencyCustom, setDisplayCurrencyCustom] = useState(false);
 
   const onAdd = useCallback(async () => {
     if (!companyId) return;
@@ -143,6 +149,31 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
     [companyId, deleteExecTarget, refresh],
   );
 
+  const onApplyDisplayCurrency = useCallback(async () => {
+    if (!companyId) return;
+    const code = displayCurrencyDraft.trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(code)) return;
+    setBusy(true);
+    try {
+      await setDisplayCurrency({ companyId, currencyCode: code });
+      refresh();
+    } finally {
+      setBusy(false);
+    }
+  }, [companyId, displayCurrencyDraft, refresh, setDisplayCurrency]);
+
+  const dashboardDisplayCurrency =
+    data && "ok" in data && data.ok === true ? data.displayCurrency : null;
+
+  useEffect(() => {
+    if (dashboardDisplayCurrency == null) return;
+    const cur = dashboardDisplayCurrency.trim().toUpperCase();
+    setDisplayCurrencyDraft(cur);
+    setDisplayCurrencyCustom(
+      !PRESET_DISPLAY_CURRENCIES.includes(cur as (typeof PRESET_DISPLAY_CURRENCIES)[number]),
+    );
+  }, [dashboardDisplayCurrency]);
+
   if (!companyId) {
     return (
       <div style={{ padding: "0.5rem", color: "#666" }}>
@@ -178,6 +209,54 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
           Period: {dash.range.from.slice(0, 10)} — {dash.range.to.slice(0, 10)}
         </div>
       </div>
+
+      <section style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-end" }}>
+        <label style={{ display: "grid", gap: 2 }}>
+          <span style={{ fontSize: "0.75rem", color: "#555" }}>Display currency (ISO 4217)</span>
+          {displayCurrencyCustom ? (
+            <input
+              value={displayCurrencyDraft}
+              onChange={(e) => setDisplayCurrencyDraft(e.target.value.toUpperCase().slice(0, 3))}
+              placeholder="USD"
+              style={{ width: 56 }}
+              maxLength={3}
+              aria-label="Custom ISO 4217 currency code"
+            />
+          ) : (
+            <select
+              value={displayCurrencyDraft}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "__other__") {
+                  setDisplayCurrencyCustom(true);
+                  setDisplayCurrencyDraft("");
+                } else {
+                  setDisplayCurrencyDraft(v);
+                }
+              }}
+              style={{ minWidth: 88 }}
+            >
+              {PRESET_DISPLAY_CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+              <option value="__other__">Other…</option>
+            </select>
+          )}
+        </label>
+        {displayCurrencyCustom ? (
+          <button type="button" onClick={() => setDisplayCurrencyCustom(false)}>
+            Use preset
+          </button>
+        ) : null}
+        <button type="button" disabled={busy} onClick={() => void onApplyDisplayCurrency()}>
+          Apply
+        </button>
+        <span style={{ fontSize: "0.75rem", color: "#666", maxWidth: 320 }}>
+          Used for cost and KPI amounts in this dashboard. Amounts are formatted with the <code>en-US</code> locale.
+        </span>
+      </section>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
         <Stat label="Cost (rollup)" value={formatCents(dash.totals.costFromRollupsCents, dash.displayCurrency)} />

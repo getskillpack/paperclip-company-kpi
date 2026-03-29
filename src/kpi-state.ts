@@ -77,6 +77,28 @@ export function parseRange(params: { rangeFrom?: string; rangeTo?: string }): { 
   return defaultDashboardRange();
 }
 
+const ISO4217 = /^[A-Za-z]{3}$/;
+
+export async function readDisplayCurrency(state: PluginStateClient, companyId: string): Promise<string> {
+  const raw = await state.get(companyStateKey(companyId, DISPLAY_CURRENCY_KEY));
+  if (typeof raw === "string" && ISO4217.test(raw.trim())) {
+    return raw.trim().toUpperCase();
+  }
+  return "USD";
+}
+
+export async function writeDisplayCurrency(
+  state: PluginStateClient,
+  companyId: string,
+  currencyCode: string,
+): Promise<void> {
+  const c = currencyCode.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(c)) {
+    throw new Error("currencyCode must be a 3-letter ISO 4217 code");
+  }
+  await state.set(companyStateKey(companyId, DISPLAY_CURRENCY_KEY), c);
+}
+
 export async function readManualLedger(state: PluginStateClient, companyId: string): Promise<ManualLedgerEntryV1[]> {
   const raw = await state.get(companyStateKey(companyId, MANUAL_LEDGER_KEY));
   if (!Array.isArray(raw)) return [];

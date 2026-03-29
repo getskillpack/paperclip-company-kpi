@@ -3,7 +3,7 @@ import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
 const manifest: PaperclipPluginManifestV1 = {
   id: "getskillpack.paperclip-company-kpi",
   apiVersion: 1,
-  version: "0.3.3",
+  version: "0.3.4",
   displayName: "Company KPI",
   description: "Cost event rollups and a manual company income/expense ledger.",
   author: "getskillpack",

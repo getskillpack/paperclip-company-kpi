@@ -10,7 +10,6 @@ import type {
   RollupAgentsReconciliationV1,
 } from "./kpi-types.js";
 import {
-  DISPLAY_CURRENCY_KEY,
   DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS,
   addRollupDayToIndex,
   addRollupHourToIndex,
@@ -22,6 +21,7 @@ import {
   hourRollupInRange,
   parseRange,
   readDayRollup,
+  readDisplayCurrency,
   readExecutiveKpiTargets,
   readHourRollup,
   readManualLedger,
@@ -34,6 +34,7 @@ import {
   utcDayFromIso,
   utcHourKeyFromIso,
   writeDayRollup,
+  writeDisplayCurrency,
   writeExecutiveKpiTargets,
   writeHourRollup,
   writeManualLedger,
@@ -180,8 +181,7 @@ const plugin = definePlugin({
         rangeFrom: typeof params.rangeFrom === "string" ? params.rangeFrom : undefined,
         rangeTo: typeof params.rangeTo === "string" ? params.rangeTo : undefined,
       });
-      const displayRaw = await ctx.state.get(companyStateKey(companyId, DISPLAY_CURRENCY_KEY));
-      const displayCurrency = typeof displayRaw === "string" && displayRaw ? displayRaw : "USD";
+      const displayCurrency = await readDisplayCurrency(ctx.state, companyId);
 
       const months = await readRollupIndex(ctx.state, companyId);
       const costRollups = [];
@@ -279,6 +279,15 @@ const plugin = definePlugin({
         },
       };
       return body;
+    });
+
+    ctx.actions.register("setCompanyKpiDisplayCurrency", async (params) => {
+      const companyId = typeof params.companyId === "string" ? params.companyId : "";
+      const currencyCode = typeof params.currencyCode === "string" ? params.currencyCode : "";
+      if (!companyId) throw new Error("companyId is required");
+      if (!currencyCode.trim()) throw new Error("currencyCode is required");
+      await writeDisplayCurrency(ctx.state, companyId, currencyCode);
+      return { ok: true as const, currencyCode: currencyCode.trim().toUpperCase() };
     });
 
     ctx.actions.register("addManualLedgerEntry", async (params) => {
