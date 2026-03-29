@@ -1,9 +1,31 @@
 # paperclip-company-kpi
 
-Paperclip plugin для учёта KPI / бюджета компании: траты на агентов (события cost и снимки бюджета агентов) и ручной журнал доходов/расходов.
+Paperclip-плагин для сводки **KPI / бюджета компании**: агрегирование `cost_event.created` в `ctx.state` и **ручной журнал** доходов и расходов.
 
-- План реализации: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
+- План: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
+- Пакет: `@getskillpack/paperclip-company-kpi`
 
-## Статус
+## Статус (MVP, фазы A–B)
 
-План реализации зафиксирован; следующий шаг — scaffold (`@paperclipai/create-paperclip-plugin`) и MVP по фазам A–B из плана.
+- Каркас на `@paperclipai/create-paperclip-plugin` + esbuild, CI (`typecheck` / `test` / `build`).
+- Worker: подписка на `cost_event.created`, rollup по календарным месяцам (`cost_rollup_v1:YYYY-MM` + индекс месяцев), ручной журнал `manual_ledger_v1`.
+- Actions: `addManualLedgerEntry`, `deleteManualLedgerEntry`, `rebuildCostRollupMonth`.
+- Data: `companyKpiDashboard` (params: `companyId`, опционально `rangeFrom` / `rangeTo` ISO).
+- UI: виджет дашборда — сводка, таблица rollup, форма и таблица ручных проводок.
+
+## Разработка
+
+```bash
+npm install
+npm run typecheck
+npm test
+npm run build
+```
+
+## Установка в Paperclip
+
+Локальный путь (dev), см. README `@paperclipai/plugin-sdk`: установка плагина из каталога с собранными `dist/` артефактами.
+
+## Лицензия
+
+MIT
