@@ -6,6 +6,18 @@
 
 Плагин собирается с **`@paperclipai/plugin-sdk`** версии, указанной в `package.json` (см. devDependencies). Требуемые capabilities перечислены в `src/manifest.ts` (`events.subscribe`, `plugin.state.read`, `plugin.state.write`, `agents.read`).
 
+## [0.3.3] — 2026-03-29
+
+### Added
+
+- UTC **day** и **hour** rollup по `cost_event.created` (отдельные индексы состояния), месячный rollup без изменений.
+- Поля `companyKpiDashboard`: `costFineGranularity` (`hour` при длине диапазона ≤ 7 UTC-суток, иначе `day`) и `costFineBuckets`.
+- Виджет: таблица почасовых/дневных ведёр рядом с месячными агрегатами.
+
+### Changed
+
+- Текст предупреждения сверки rollup ↔ `spentMonthlyCents` переведён на английский.
+
 ## [0.3.2] — 2026-03-29
 
 ### Added
@@ -41,6 +53,7 @@
 
 - Rollup по `cost_event.created`, ручной журнал, виджет dashboard, цели C-level (фазы A–B, E).
 
+[0.3.3]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.3
 [0.3.2]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.2
 [0.3.1]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.1
 [0.3.0]: https://github.com/getskillpack/paperclip-company-kpi/releases/tag/v0.3.0

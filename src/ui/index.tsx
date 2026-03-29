@@ -284,6 +284,37 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
 
       <section>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>
+          Cost (UTC {dash.costFineGranularity === "hour" ? "hourly" : "daily"})
+        </div>
+        <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
+          Для диапазона ≤ 7 суток — почасовые ведра; иначе — по дням. Ключи в UTC.
+        </div>
+        {dash.costFineBuckets.length === 0 ? (
+          <div style={{ color: "#666" }}>Нет cost_event в этом разрезе за период.</div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+                <th style={{ padding: "4px 8px" }}>Bucket (UTC)</th>
+                <th style={{ padding: "4px 8px" }}>События</th>
+                <th style={{ padding: "4px 8px" }}>Сумма</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dash.costFineBuckets.map((b) => (
+                <tr key={b.bucketKey} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={{ padding: "4px 8px" }}>{b.bucketKey}</td>
+                  <td style={{ padding: "4px 8px" }}>{b.eventCount}</td>
+                  <td style={{ padding: "4px 8px" }}>{formatCents(b.totalCostCents, dash.displayCurrency)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section>
         <div style={{ fontWeight: 600, marginBottom: 6 }}>Цели C-level (задаёт CEO / board)</div>
         <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
           Реестр KPI по ролям: target и ручной факт (MVP). См.{" "}

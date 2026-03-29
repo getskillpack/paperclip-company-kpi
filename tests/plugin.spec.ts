@@ -4,8 +4,11 @@ import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 import {
+  COST_ROLLUP_DAY_INDEX_KEY,
+  COST_ROLLUP_HOUR_INDEX_KEY,
   COST_ROLLUP_KEY_PREFIX,
   COST_ROLLUP_INDEX_KEY,
+  DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS,
   EXECUTIVE_KPI_TARGETS_KEY,
   MANUAL_LEDGER_KEY,
   companyStateKey,
@@ -90,12 +93,55 @@ describe("company-kpi plugin", () => {
 
     const idx = harness.getState(companyStateKey(companyId, COST_ROLLUP_INDEX_KEY)) as string[];
     expect(idx).toContain("2026-03");
+    const dayIdx = harness.getState(companyStateKey(companyId, COST_ROLLUP_DAY_INDEX_KEY)) as string[];
+    expect(dayIdx).toContain("2026-03-10");
+    const hourIdx = harness.getState(companyStateKey(companyId, COST_ROLLUP_HOUR_INDEX_KEY)) as string[];
+    expect(hourIdx).toContain("2026-03-10T12");
     const rollup = harness.getState(companyStateKey(companyId, `${COST_ROLLUP_KEY_PREFIX}2026-03`)) as {
       totalCostCents: number;
       eventCount: number;
     };
     expect(rollup.totalCostCents).toBe(42);
     expect(rollup.eventCount).toBe(1);
+  });
+
+  it("uses hour buckets when range span ≤ 7 UTC days, else day buckets", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
+    harness.seed({ agents: [] });
+    await plugin.definition.setup(harness.ctx);
+
+    await harness.emit(
+      "cost_event.created",
+      { costCents: 1, occurredAt: "2026-03-10T12:00:00.000Z" },
+      { companyId, eventId: "h1" },
+    );
+    await harness.emit(
+      "cost_event.created",
+      { costCents: 2, occurredAt: "2026-03-10T13:00:00.000Z" },
+      { companyId, eventId: "h2" },
+    );
+
+    const shortFrom = "2026-03-09T00:00:00.000Z";
+    const shortTo = "2026-03-11T23:59:59.999Z";
+    const spanDays = (new Date(shortTo).getTime() - new Date(shortFrom).getTime()) / (24 * 60 * 60 * 1000);
+    expect(spanDays).toBeLessThanOrEqual(DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS);
+
+    const dashShort = await harness.getData<{
+      costFineGranularity: string;
+      costFineBuckets: { bucketKey: string; totalCostCents: number }[];
+    }>("companyKpiDashboard", { companyId, rangeFrom: shortFrom, rangeTo: shortTo });
+    expect(dashShort.costFineGranularity).toBe("hour");
+    expect(dashShort.costFineBuckets.map((b) => b.bucketKey).sort()).toEqual(["2026-03-10T12", "2026-03-10T13"]);
+    expect(dashShort.costFineBuckets.reduce((s, b) => s + b.totalCostCents, 0)).toBe(3);
+
+    const longFrom = "2026-03-01T00:00:00.000Z";
+    const longTo = "2026-03-31T23:59:59.999Z";
+    const dashLong = await harness.getData<{
+      costFineGranularity: string;
+      costFineBuckets: { bucketKey: string; totalCostCents: number }[];
+    }>("companyKpiDashboard", { companyId, rangeFrom: longFrom, rangeTo: longTo });
+    expect(dashLong.costFineGranularity).toBe("day");
+    expect(dashLong.costFineBuckets).toEqual([{ bucketKey: "2026-03-10", totalCostCents: 3, eventCount: 2 }]);
   });
 
   it("flags reconciliation when rollup and sum(agent spent) diverge (single UTC month)", async () => {
@@ -129,6 +175,7 @@ describe("company-kpi plugin", () => {
       rangeTo: to,
     });
     expect(dash.reconciliation.mismatchWarning).not.toBeNull();
+    expect(dash.reconciliation.mismatchWarning).toMatch(/Mismatch for/);
   });
 
   it("adds and deletes manual ledger entries", async () => {

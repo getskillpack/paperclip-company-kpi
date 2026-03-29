@@ -11,12 +11,16 @@ export type ManualLedgerEntryV1 = {
   createdByHint?: string;
 };
 
+/** Monthly / daily / hourly bucket: idempotent append via `appliedPluginEventIds`. */
 export type CostRollupMonthV1 = {
   totalCostCents: number;
   eventCount: number;
   lastOccurredAt: string | null;
   appliedPluginEventIds: string[];
 };
+
+export type CostRollupDayV1 = CostRollupMonthV1;
+export type CostRollupHourV1 = CostRollupMonthV1;
 
 export type DashboardParams = {
   companyId?: string;
@@ -65,12 +69,24 @@ export type RollupAgentsReconciliationV1 = {
   mismatchWarning: string | null;
 };
 
+export type CostFineGranularity = "hour" | "day";
+
+export type CostFineBucketV1 = {
+  /** UTC day `YYYY-MM-DD` or hour `YYYY-MM-DDTHH`. */
+  bucketKey: string;
+  totalCostCents: number;
+  eventCount: number;
+};
+
 export type DashboardPayload = {
   ok: true;
   companyId: string;
   range: { from: string; to: string };
   displayCurrency: string;
   costRollups: Array<{ yearMonth: string; rollup: CostRollupMonthV1 }>;
+  /** Range span ≤ 7 UTC days → hour buckets; otherwise day buckets. */
+  costFineGranularity: CostFineGranularity;
+  costFineBuckets: CostFineBucketV1[];
   manualEntries: ManualLedgerEntryV1[];
   executiveTargets: ExecutiveKpiTargetV1[];
   agentBudgetRows: AgentBudgetSnapshotV1[];

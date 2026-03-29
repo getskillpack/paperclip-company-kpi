@@ -1,6 +1,8 @@
 import { definePlugin, runWorker, type PluginEvent } from "@paperclipai/plugin-sdk";
 import type {
   AgentBudgetSnapshotV1,
+  CostFineBucketV1,
+  CostFineGranularity,
   CostRollupMonthV1,
   DashboardPayload,
   ExecutiveKpiTargetV1,
@@ -9,17 +11,31 @@ import type {
 } from "./kpi-types.js";
 import {
   DISPLAY_CURRENCY_KEY,
+  DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS,
+  addRollupDayToIndex,
+  addRollupHourToIndex,
   addRollupMonthToIndex,
   comparableUtcMonthForRange,
   companyStateKey,
+  dayRollupInRange,
   emptyRollup,
+  hourRollupInRange,
   parseRange,
+  readDayRollup,
   readExecutiveKpiTargets,
+  readHourRollup,
   readManualLedger,
   readMonthRollup,
+  readRollupDayIndex,
+  readRollupHourIndex,
   readRollupIndex,
+  rangeSpanUtcDays,
   rollupInRange,
+  utcDayFromIso,
+  utcHourKeyFromIso,
+  writeDayRollup,
   writeExecutiveKpiTargets,
+  writeHourRollup,
   writeManualLedger,
   writeMonthRollup,
   yearMonthFromIso,
@@ -46,7 +62,7 @@ function reconcileRollupVsAgentsSpend(
   const tolerance = Math.max(1, Math.round(0.01 * basis));
   const mismatchWarning =
     Math.abs(deltaCents) > tolerance
-      ? `Расхождение за ${comparableMonth}: rollup cost_event = ${rollupTotal} ¢, сумма spent по агентам = ${agentsSpentSumCents} ¢ (Δ ${deltaCents} ¢, порог ${tolerance} ¢). Возможны разные периоды биллинга, не все траты идут в cost_event или задержка синхронизации.`
+      ? `Mismatch for ${comparableMonth}: cost_event rollup = ${rollupTotal} ¢, sum of agents’ spentMonthlyCents = ${agentsSpentSumCents} ¢ (Δ ${deltaCents} ¢, tolerance ${tolerance} ¢). Billing periods may differ, not all spend flows through cost_event, or sync may lag.`
       : null;
   return {
     comparableMonth,
@@ -123,7 +139,11 @@ const plugin = definePlugin({
         return;
       }
       const yearMonth = yearMonthFromIso(parsed.occurredAt);
+      const utcDay = utcDayFromIso(parsed.occurredAt);
+      const hourKey = utcHourKeyFromIso(parsed.occurredAt);
       await addRollupMonthToIndex(ctx.state, companyId, yearMonth);
+      await addRollupDayToIndex(ctx.state, companyId, utcDay);
+      await addRollupHourToIndex(ctx.state, companyId, hourKey);
       const rollup = await readMonthRollup(ctx.state, companyId, yearMonth);
       if (rollup.appliedPluginEventIds.includes(event.eventId)) {
         return;
@@ -133,6 +153,21 @@ const plugin = definePlugin({
       rollup.lastOccurredAt = parsed.occurredAt;
       rollup.appliedPluginEventIds.push(event.eventId);
       await writeMonthRollup(ctx.state, companyId, yearMonth, rollup);
+
+      const dayRollup = await readDayRollup(ctx.state, companyId, utcDay);
+      dayRollup.totalCostCents += parsed.costCents;
+      dayRollup.eventCount += 1;
+      dayRollup.lastOccurredAt = parsed.occurredAt;
+      dayRollup.appliedPluginEventIds.push(event.eventId);
+      await writeDayRollup(ctx.state, companyId, utcDay, dayRollup);
+
+      const hourRollup = await readHourRollup(ctx.state, companyId, hourKey);
+      hourRollup.totalCostCents += parsed.costCents;
+      hourRollup.eventCount += 1;
+      hourRollup.lastOccurredAt = parsed.occurredAt;
+      hourRollup.appliedPluginEventIds.push(event.eventId);
+      await writeHourRollup(ctx.state, companyId, hourKey, hourRollup);
+
       await ctx.state.set(companyStateKey(companyId, "last_cost_sync_v1"), new Date().toISOString());
     });
 
@@ -195,12 +230,44 @@ const plugin = definePlugin({
       const comparableMonth = comparableUtcMonthForRange(range.from, range.to);
       const reconciliation = reconcileRollupVsAgentsSpend(comparableMonth, costRollups, agentsSpentSumCents);
 
+      const spanDays = rangeSpanUtcDays(range.from, range.to);
+      const costFineGranularity: CostFineGranularity =
+        spanDays <= DASHBOARD_HOUR_BREAKDOWN_MAX_DAYS ? "hour" : "day";
+      const costFineBuckets: CostFineBucketV1[] = [];
+      if (costFineGranularity === "hour") {
+        const hours = await readRollupHourIndex(ctx.state, companyId);
+        for (const hk of hours) {
+          if (!hourRollupInRange(hk, range.from, range.to)) continue;
+          const r = await readHourRollup(ctx.state, companyId, hk);
+          if (r.eventCount === 0 && r.totalCostCents === 0) continue;
+          costFineBuckets.push({
+            bucketKey: hk,
+            totalCostCents: r.totalCostCents,
+            eventCount: r.eventCount,
+          });
+        }
+      } else {
+        const days = await readRollupDayIndex(ctx.state, companyId);
+        for (const d of days) {
+          if (!dayRollupInRange(d, range.from, range.to)) continue;
+          const r = await readDayRollup(ctx.state, companyId, d);
+          if (r.eventCount === 0 && r.totalCostCents === 0) continue;
+          costFineBuckets.push({
+            bucketKey: d,
+            totalCostCents: r.totalCostCents,
+            eventCount: r.eventCount,
+          });
+        }
+      }
+
       const body: DashboardPayload = {
         ok: true,
         companyId,
         range,
         displayCurrency,
         costRollups,
+        costFineGranularity,
+        costFineBuckets,
         manualEntries,
         executiveTargets,
         agentBudgetRows,
