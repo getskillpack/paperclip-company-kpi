@@ -1,8 +1,16 @@
 import { definePlugin, runWorker, type PluginEvent } from "@paperclipai/plugin-sdk";
-import type { DashboardPayload, ExecutiveKpiTargetV1, ManualLedgerEntryV1 } from "./kpi-types.js";
+import type {
+  AgentBudgetSnapshotV1,
+  CostRollupMonthV1,
+  DashboardPayload,
+  ExecutiveKpiTargetV1,
+  ManualLedgerEntryV1,
+  RollupAgentsReconciliationV1,
+} from "./kpi-types.js";
 import {
   DISPLAY_CURRENCY_KEY,
   addRollupMonthToIndex,
+  comparableUtcMonthForRange,
   companyStateKey,
   emptyRollup,
   parseRange,
@@ -10,12 +18,44 @@ import {
   readManualLedger,
   readMonthRollup,
   readRollupIndex,
+  rollupInRange,
   writeExecutiveKpiTargets,
   writeManualLedger,
   writeMonthRollup,
   yearMonthFromIso,
-  rollupInRange,
 } from "./kpi-state.js";
+
+function reconcileRollupVsAgentsSpend(
+  comparableMonth: string | null,
+  costRollups: Array<{ yearMonth: string; rollup: CostRollupMonthV1 }>,
+  agentsSpentSumCents: number,
+): RollupAgentsReconciliationV1 {
+  if (!comparableMonth) {
+    return {
+      comparableMonth: null,
+      rollupTotalCents: null,
+      agentsSpentSumCents,
+      deltaCents: null,
+      mismatchWarning: null,
+    };
+  }
+  const row = costRollups.find((r) => r.yearMonth === comparableMonth);
+  const rollupTotal = row?.rollup.totalCostCents ?? 0;
+  const deltaCents = rollupTotal - agentsSpentSumCents;
+  const basis = Math.max(rollupTotal, agentsSpentSumCents, 1);
+  const tolerance = Math.max(1, Math.round(0.01 * basis));
+  const mismatchWarning =
+    Math.abs(deltaCents) > tolerance
+      ? `Расхождение за ${comparableMonth}: rollup cost_event = ${rollupTotal} ¢, сумма spent по агентам = ${agentsSpentSumCents} ¢ (Δ ${deltaCents} ¢, порог ${tolerance} ¢). Возможны разные периоды биллинга, не все траты идут в cost_event или задержка синхронизации.`
+      : null;
+  return {
+    comparableMonth,
+    rollupTotalCents: rollupTotal,
+    agentsSpentSumCents,
+    deltaCents,
+    mismatchWarning,
+  };
+}
 
 function readCostFromPayload(payload: unknown): {
   costCents: number;
@@ -140,6 +180,21 @@ const plugin = definePlugin({
         return a.periodLabel.localeCompare(b.periodLabel) || a.kpiLabel.localeCompare(b.kpiLabel);
       });
 
+      const agents = await ctx.agents.list({ companyId });
+      const agentBudgetRows: AgentBudgetSnapshotV1[] = agents
+        .map((a) => ({
+          agentId: a.id,
+          name: a.name,
+          urlKey: a.urlKey,
+          status: a.status,
+          budgetMonthlyCents: a.budgetMonthlyCents,
+          spentMonthlyCents: a.spentMonthlyCents,
+        }))
+        .sort((x, y) => x.name.localeCompare(y.name));
+      const agentsSpentSumCents = agentBudgetRows.reduce((s, r) => s + r.spentMonthlyCents, 0);
+      const comparableMonth = comparableUtcMonthForRange(range.from, range.to);
+      const reconciliation = reconcileRollupVsAgentsSpend(comparableMonth, costRollups, agentsSpentSumCents);
+
       const body: DashboardPayload = {
         ok: true,
         companyId,
@@ -148,6 +203,8 @@ const plugin = definePlugin({
         costRollups,
         manualEntries,
         executiveTargets,
+        agentBudgetRows,
+        reconciliation,
         totals: {
           costFromRollupsCents,
           manualIncomeCents,

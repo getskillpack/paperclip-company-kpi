@@ -47,6 +47,13 @@
 1. **Фаза A — каркас:** scaffold через `@paperclipai/create-paperclip-plugin`, CI typecheck/test/build, пустой dashboard «OK».
 2. **Фаза B — MVP данные:** подписка на `cost_event.created`, запись агрегатов в `ctx.state`, ручные проводки через actions, простая таблица в UI.
 3. **Фаза C — сверка с агентами:** панель по агентам (budget/spent из API), предупреждения при расхождении с rollup (документировать допущения).
+
+   **Допущения фазы C (rollup ↔ `spentMonthlyCents`):**
+
+   - Rollup по `cost_event.created` ведётся по UTC-месяцу даты `occurredAt` события.
+   - `budgetMonthlyCents` / `spentMonthlyCents` в API агентов — снимок **текущего биллингового месяца** инстанса (как отдаёт host); сравнение выполняется только если **оба конца выбранного диапазона** попадают в **один и тот же UTC-календарный месяц** (`comparableMonth`).
+   - Сумма `spentMonthlyCents` по всем агентам сравнивается с **полным** месячным rollup за этот `YYYY-MM` (не с «усечённым» под диапазон внутри месяца). Для произвольного поддиапазона внутри месяца предупреждение может быть некорректным — в UI по умолчанию используется целый текущий месяц.
+   - Порог расхождения: max(1 ¢, 1% от max(rollup, сумма spent)), выше — предупреждение в виджете. Расхождения возможны из‑за задержек, траты вне `cost_event`, другой период биллинга у host.
 4. **Фаза D — отчётность:** экспорт CSV, email/webhook вне скоупа до запроса board.
 5. **Фаза E — цели C-level:** реестр целей, которые CEO выставляет руководителям (роль/метка, название KPI, target, период, ручной actual); см. [docs/C_LEVEL_KPI.md](./C_LEVEL_KPI.md). Actions `upsertExecutiveKpiTarget` / `deleteExecutiveKpiTarget`, отображение в dashboard widget.
 

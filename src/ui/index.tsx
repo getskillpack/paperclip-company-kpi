@@ -186,6 +186,78 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </div>
 
       <section>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Агенты: budget vs spent (host API)</div>
+        <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
+          Поля <code>budgetMonthlyCents</code> / <code>spentMonthlyCents</code> — снимок текущего биллингового месяца инстанса. Сверка с rollup ниже — только если выбранный период целиком в одном UTC-месяце.
+        </div>
+        {dash.reconciliation.mismatchWarning ? (
+          <div
+            style={{
+              marginBottom: 8,
+              padding: "8px 10px",
+              borderRadius: 8,
+              background: "#fff3e0",
+              border: "1px solid #ff9800",
+              color: "#5d4037",
+              fontSize: "0.85rem",
+            }}
+          >
+            {dash.reconciliation.mismatchWarning}
+          </div>
+        ) : null}
+        {dash.reconciliation.comparableMonth ? (
+          <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
+            Сверка за {dash.reconciliation.comparableMonth}: rollup cost_event ={" "}
+            {dash.reconciliation.rollupTotalCents != null ? formatCents(dash.reconciliation.rollupTotalCents, dash.displayCurrency) : "—"}
+            , сумма spent по агентам = {formatCents(dash.reconciliation.agentsSpentSumCents, dash.displayCurrency)}
+            {dash.reconciliation.deltaCents != null ? (
+              <span>
+                {" "}
+                (Δ {formatCents(dash.reconciliation.deltaCents, dash.displayCurrency)})
+              </span>
+            ) : null}
+            .
+          </div>
+        ) : (
+          <div style={{ color: "#666", fontSize: "0.8rem", marginBottom: 8 }}>
+            Период охватывает несколько UTC-месяцев — автоматическая сверка rollup ↔ spent отключена.
+          </div>
+        )}
+        {dash.agentBudgetRows.length === 0 ? (
+          <div style={{ color: "#666" }}>Нет агентов или нет доступа к списку.</div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+                <th style={{ padding: "4px 8px" }}>Агент</th>
+                <th style={{ padding: "4px 8px" }}>Статус</th>
+                <th style={{ padding: "4px 8px" }}>Budget / мес</th>
+                <th style={{ padding: "4px 8px" }}>Spent / мес</th>
+                <th style={{ padding: "4px 8px" }}>Остаток</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dash.agentBudgetRows.map((row) => {
+                const left = row.budgetMonthlyCents - row.spentMonthlyCents;
+                return (
+                  <tr key={row.agentId} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "4px 8px" }}>
+                      {row.name}
+                      <span style={{ color: "#888", fontSize: "0.75rem" }}> ({row.urlKey})</span>
+                    </td>
+                    <td style={{ padding: "4px 8px" }}>{row.status}</td>
+                    <td style={{ padding: "4px 8px" }}>{formatCents(row.budgetMonthlyCents, dash.displayCurrency)}</td>
+                    <td style={{ padding: "4px 8px" }}>{formatCents(row.spentMonthlyCents, dash.displayCurrency)}</td>
+                    <td style={{ padding: "4px 8px" }}>{formatCents(left, dash.displayCurrency)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section>
         <div style={{ fontWeight: 600, marginBottom: 6 }}>Агрегаты cost по месяцам</div>
         {dash.costRollups.length === 0 ? (
           <div style={{ color: "#666" }}>Пока нет cost_event в выбранном периоде.</div>

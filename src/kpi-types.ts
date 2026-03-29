@@ -43,6 +43,28 @@ export type ExecutiveKpiTargetV1 = {
   updatedAt: string;
 };
 
+/** Снимок лимита/факта по агенту из host API (текущий биллинговый месяц инстанса). */
+export type AgentBudgetSnapshotV1 = {
+  agentId: string;
+  name: string;
+  urlKey: string;
+  status: string;
+  budgetMonthlyCents: number;
+  spentMonthlyCents: number;
+};
+
+/**
+ * Сверка суммы `spentMonthlyCents` по агентам с rollup cost_event за один UTC-календарный месяц.
+ * См. docs/IMPLEMENTATION_PLAN.md — фаза C (допущения).
+ */
+export type RollupAgentsReconciliationV1 = {
+  comparableMonth: string | null;
+  rollupTotalCents: number | null;
+  agentsSpentSumCents: number;
+  deltaCents: number | null;
+  mismatchWarning: string | null;
+};
+
 export type DashboardPayload = {
   ok: true;
   companyId: string;
@@ -51,6 +73,8 @@ export type DashboardPayload = {
   costRollups: Array<{ yearMonth: string; rollup: CostRollupMonthV1 }>;
   manualEntries: ManualLedgerEntryV1[];
   executiveTargets: ExecutiveKpiTargetV1[];
+  agentBudgetRows: AgentBudgetSnapshotV1[];
+  reconciliation: RollupAgentsReconciliationV1;
   totals: {
     costFromRollupsCents: number;
     manualIncomeCents: number;

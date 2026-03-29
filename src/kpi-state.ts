@@ -141,3 +141,10 @@ export function rollupInRange(yearMonth: string, fromIso: string, toIso: string)
   const monthEnd = monthEndUtcMs(yearMonth);
   return monthStart <= endRange && monthEnd >= startRange;
 }
+
+/** If range endpoints fall in the same UTC calendar month, return `YYYY-MM` for rollup ↔ agents.spent comparison. */
+export function comparableUtcMonthForRange(fromIso: string, toIso: string): string | null {
+  const a = yearMonthFromIso(fromIso);
+  const b = yearMonthFromIso(toIso);
+  return a === b ? a : null;
+}

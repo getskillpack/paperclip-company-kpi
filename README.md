@@ -23,7 +23,8 @@ If this project helps you, **[star the repository on GitHub](https://github.com/
 
 - **Phases A–B:** scaffold, CI (`typecheck` / `test` / `build`), rollup + ledger + dashboard — shipped.
 - **Phase E:** C-level targets in `ctx.state` and UI — shipped (see [docs/C_LEVEL_KPI.md](docs/C_LEVEL_KPI.md)).
-- **Next:** Phase C (reconcile rollups with per-agent `budget` / `spent` signals) and public npm — tracked in Paperclip under the [getskillpack paperclip-company-kpi](https://github.com/getskillpack/paperclip-company-kpi) program; see [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
+- **Phase C:** per-agent `budgetMonthlyCents` / `spentMonthlyCents` в dashboard и сверка с месячным rollup (см. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)) — shipped.
+- **Next:** public npm — tracked in Paperclip under the [getskillpack paperclip-company-kpi](https://github.com/getskillpack/paperclip-company-kpi) program; see [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md).
 
 ## Development
 

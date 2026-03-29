@@ -1,3 +1,4 @@
+import type { Agent } from "@paperclipai/shared";
 import { describe, expect, it } from "vitest";
 import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
@@ -12,9 +13,47 @@ import {
 
 const companyId = "11111111-1111-1111-1111-111111111111";
 
+const testCaps = [...manifest.capabilities, "events.emit"] as const;
+
+function seedAgent(partial: Partial<Agent> & Pick<Agent, "id" | "companyId" | "name" | "spentMonthlyCents" | "budgetMonthlyCents">): Agent {
+  const now = new Date();
+  return {
+    urlKey: partial.urlKey ?? "agent",
+    role: partial.role ?? "engineer",
+    title: partial.title ?? null,
+    icon: partial.icon ?? null,
+    status: partial.status ?? "running",
+    reportsTo: partial.reportsTo ?? null,
+    capabilities: partial.capabilities ?? null,
+    adapterType: partial.adapterType ?? "cursor",
+    adapterConfig: partial.adapterConfig ?? {},
+    runtimeConfig: partial.runtimeConfig ?? {},
+    pauseReason: partial.pauseReason ?? null,
+    pausedAt: partial.pausedAt ?? null,
+    permissions: partial.permissions ?? { canCreateAgents: false },
+    lastHeartbeatAt: partial.lastHeartbeatAt ?? null,
+    metadata: partial.metadata ?? null,
+    createdAt: partial.createdAt ?? now,
+    updatedAt: partial.updatedAt ?? now,
+    ...partial,
+  };
+}
+
 describe("company-kpi plugin", () => {
   it("aggregates cost_event.created into monthly rollup (idempotent by plugin event id)", async () => {
-    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
+    harness.seed({
+      agents: [
+        seedAgent({
+          id: "agent-rollup-match",
+          companyId,
+          name: "Matcher",
+          urlKey: "matcher",
+          spentMonthlyCents: 42,
+          budgetMonthlyCents: 1000,
+        }),
+      ],
+    });
     await plugin.definition.setup(harness.ctx);
 
     const from = "2026-03-01T00:00:00.000Z";
@@ -33,6 +72,8 @@ describe("company-kpi plugin", () => {
     });
     expect(dash.ok).toBe(true);
     expect((dash as { totals: { costFromRollupsCents: number } }).totals.costFromRollupsCents).toBe(42);
+    const d1 = dash as { reconciliation: { mismatchWarning: string | null } };
+    expect(d1.reconciliation.mismatchWarning).toBeNull();
 
     await harness.emit(
       "cost_event.created",
@@ -57,8 +98,41 @@ describe("company-kpi plugin", () => {
     expect(rollup.eventCount).toBe(1);
   });
 
+  it("flags reconciliation when rollup and sum(agent spent) diverge (single UTC month)", async () => {
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
+    harness.seed({
+      agents: [
+        seedAgent({
+          id: "agent-high-spend",
+          companyId,
+          name: "Spender",
+          urlKey: "spender",
+          spentMonthlyCents: 10_000,
+          budgetMonthlyCents: 50_000,
+        }),
+      ],
+    });
+    await plugin.definition.setup(harness.ctx);
+
+    const from = "2026-04-01T00:00:00.000Z";
+    const to = "2026-04-30T23:59:59.999Z";
+
+    await harness.emit(
+      "cost_event.created",
+      { costCents: 100, occurredAt: "2026-04-10T12:00:00.000Z" },
+      { companyId, eventId: "cost-mismatch-1" },
+    );
+
+    const dash = await harness.getData<{ reconciliation: { mismatchWarning: string | null } }>("companyKpiDashboard", {
+      companyId,
+      rangeFrom: from,
+      rangeTo: to,
+    });
+    expect(dash.reconciliation.mismatchWarning).not.toBeNull();
+  });
+
   it("adds and deletes manual ledger entries", async () => {
-    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
     await plugin.definition.setup(harness.ctx);
 
     const entry = {
@@ -81,7 +155,7 @@ describe("company-kpi plugin", () => {
   });
 
   it("rebuildCostRollupMonth clears a month bucket", async () => {
-    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
     await plugin.definition.setup(harness.ctx);
 
     await harness.emit(
@@ -98,14 +172,14 @@ describe("company-kpi plugin", () => {
   });
 
   it("exposes health data", async () => {
-    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
     await plugin.definition.setup(harness.ctx);
     const h = await harness.getData<{ status: string }>("health", {});
     expect(h.status).toBe("ok");
   });
 
   it("upserts and deletes executive KPI targets and returns them on dashboard", async () => {
-    const harness = createTestHarness({ manifest, capabilities: [...manifest.capabilities, "events.emit"] });
+    const harness = createTestHarness({ manifest, capabilities: [...testCaps] });
     await plugin.definition.setup(harness.ctx);
 
     const now = "2026-03-29T12:00:00.000Z";
