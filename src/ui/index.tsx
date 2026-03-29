@@ -51,7 +51,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       kind,
       amountCents,
       currency: currency.trim() || "USD",
-      label: label.trim() || "(без описания)",
+      label: label.trim() || "(no description)",
       occurredAt: now,
       createdAt: now,
     };
@@ -146,25 +146,25 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
   if (!companyId) {
     return (
       <div style={{ padding: "0.5rem", color: "#666" }}>
-        Выберите компанию в интерфейсе Paperclip, чтобы видеть KPI.
+        Select a company in the Paperclip UI to view KPIs.
       </div>
     );
   }
 
   if (loading) {
-    return <div style={{ padding: "0.5rem" }}>Загрузка Company KPI…</div>;
+    return <div style={{ padding: "0.5rem" }}>Loading Company KPI…</div>;
   }
 
   if (error) {
     return (
       <div style={{ padding: "0.5rem", color: "#b00020" }}>
-        Ошибка плагина: {error.message}
+        Plugin error: {error.message}
       </div>
     );
   }
 
   if (!data || !("ok" in data) || data.ok !== true) {
-    const msg = data && "error" in data ? data.error : "Нет данных";
+    const msg = data && "error" in data ? data.error : "No data";
     return <div style={{ padding: "0.5rem" }}>{msg}</div>;
   }
 
@@ -175,20 +175,20 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       <div>
         <strong>Company KPI</strong>
         <div style={{ color: "#555", marginTop: 4 }}>
-          Период: {dash.range.from.slice(0, 10)} — {dash.range.to.slice(0, 10)}
+          Period: {dash.range.from.slice(0, 10)} — {dash.range.to.slice(0, 10)}
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
         <Stat label="Cost (rollup)" value={formatCents(dash.totals.costFromRollupsCents, dash.displayCurrency)} />
-        <Stat label="Ручные доходы" value={formatCents(dash.totals.manualIncomeCents, dash.displayCurrency)} />
-        <Stat label="Ручные расходы" value={formatCents(dash.totals.manualExpenseCents, dash.displayCurrency)} />
+        <Stat label="Manual income" value={formatCents(dash.totals.manualIncomeCents, dash.displayCurrency)} />
+        <Stat label="Manual expenses" value={formatCents(dash.totals.manualExpenseCents, dash.displayCurrency)} />
       </div>
 
       <section>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Агенты: budget vs spent (host API)</div>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Agents: budget vs spent (host API)</div>
         <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
-          Поля <code>budgetMonthlyCents</code> / <code>spentMonthlyCents</code> — снимок текущего биллингового месяца инстанса. Сверка с rollup ниже — только если выбранный период целиком в одном UTC-месяце.
+          <code>budgetMonthlyCents</code> / <code>spentMonthlyCents</code> reflect the instance&apos;s current billing month. Rollup reconciliation below applies only when the selected range falls entirely in one UTC month.
         </div>
         {dash.reconciliation.mismatchWarning ? (
           <div
@@ -207,9 +207,9 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
         ) : null}
         {dash.reconciliation.comparableMonth ? (
           <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
-            Сверка за {dash.reconciliation.comparableMonth}: rollup cost_event ={" "}
+            Reconciliation for {dash.reconciliation.comparableMonth}: rollup cost_event ={" "}
             {dash.reconciliation.rollupTotalCents != null ? formatCents(dash.reconciliation.rollupTotalCents, dash.displayCurrency) : "—"}
-            , сумма spent по агентам = {formatCents(dash.reconciliation.agentsSpentSumCents, dash.displayCurrency)}
+            , sum of agents&apos; spent = {formatCents(dash.reconciliation.agentsSpentSumCents, dash.displayCurrency)}
             {dash.reconciliation.deltaCents != null ? (
               <span>
                 {" "}
@@ -220,20 +220,20 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
           </div>
         ) : (
           <div style={{ color: "#666", fontSize: "0.8rem", marginBottom: 8 }}>
-            Период охватывает несколько UTC-месяцев — автоматическая сверка rollup ↔ spent отключена.
+            The range spans multiple UTC months — automatic rollup ↔ spent reconciliation is disabled.
           </div>
         )}
         {dash.agentBudgetRows.length === 0 ? (
-          <div style={{ color: "#666" }}>Нет агентов или нет доступа к списку.</div>
+          <div style={{ color: "#666" }}>No agents or no access to the list.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: "4px 8px" }}>Агент</th>
-                <th style={{ padding: "4px 8px" }}>Статус</th>
-                <th style={{ padding: "4px 8px" }}>Budget / мес</th>
-                <th style={{ padding: "4px 8px" }}>Spent / мес</th>
-                <th style={{ padding: "4px 8px" }}>Остаток</th>
+                <th style={{ padding: "4px 8px" }}>Agent</th>
+                <th style={{ padding: "4px 8px" }}>Status</th>
+                <th style={{ padding: "4px 8px" }}>Budget / mo</th>
+                <th style={{ padding: "4px 8px" }}>Spent / mo</th>
+                <th style={{ padding: "4px 8px" }}>Remaining</th>
               </tr>
             </thead>
             <tbody>
@@ -258,16 +258,16 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
 
       <section>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Агрегаты cost по месяцам</div>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Monthly cost aggregates</div>
         {dash.costRollups.length === 0 ? (
-          <div style={{ color: "#666" }}>Пока нет cost_event в выбранном периоде.</div>
+          <div style={{ color: "#666" }}>No cost_event rows in the selected period yet.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: "4px 8px" }}>Месяц</th>
-                <th style={{ padding: "4px 8px" }}>События</th>
-                <th style={{ padding: "4px 8px" }}>Сумма</th>
+                <th style={{ padding: "4px 8px" }}>Month</th>
+                <th style={{ padding: "4px 8px" }}>Events</th>
+                <th style={{ padding: "4px 8px" }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -288,17 +288,17 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
           Cost (UTC {dash.costFineGranularity === "hour" ? "hourly" : "daily"})
         </div>
         <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
-          Для диапазона ≤ 7 суток — почасовые ведра; иначе — по дням. Ключи в UTC.
+          For ranges ≤ 7 UTC days, buckets are hourly; otherwise daily. Keys are in UTC.
         </div>
         {dash.costFineBuckets.length === 0 ? (
-          <div style={{ color: "#666" }}>Нет cost_event в этом разрезе за период.</div>
+          <div style={{ color: "#666" }}>No cost_event rows for this breakdown in the period.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
                 <th style={{ padding: "4px 8px" }}>Bucket (UTC)</th>
-                <th style={{ padding: "4px 8px" }}>События</th>
-                <th style={{ padding: "4px 8px" }}>Сумма</th>
+                <th style={{ padding: "4px 8px" }}>Events</th>
+                <th style={{ padding: "4px 8px" }}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -315,9 +315,9 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
 
       <section>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Цели C-level (задаёт CEO / board)</div>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>C-level targets (set by CEO / board)</div>
         <div style={{ color: "#555", fontSize: "0.8rem", marginBottom: 8 }}>
-          Реестр KPI по ролям: target и ручной факт (MVP). См.{" "}
+          Role-based KPI registry: target and manual actual (MVP). See{" "}
           <a href="https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/C_LEVEL_KPI.md" target="_blank" rel="noreferrer">
             docs/C_LEVEL_KPI.md
           </a>
@@ -325,11 +325,11 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-end", marginBottom: 8 }}>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Роль / владелец</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Role / owner</span>
             <input value={exOwner} onChange={(e) => setExOwner(e.target.value)} placeholder="CTO" style={{ width: 120 }} />
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Тег</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Tag</span>
             <select
               value={exRoleTag}
               onChange={(e) => setExRoleTag(e.target.value as ExecutiveKpiTargetV1["ownerRoleTag"] | "")}
@@ -345,14 +345,14 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
           </label>
           <label style={{ display: "grid", gap: 2, flex: "1 1 140px" }}>
             <span style={{ fontSize: "0.75rem", color: "#555" }}>KPI</span>
-            <input value={exKpi} onChange={(e) => setExKpi(e.target.value)} placeholder="Закрытых тикетов / нед" />
+            <input value={exKpi} onChange={(e) => setExKpi(e.target.value)} placeholder="Closed tickets / week" />
           </label>
           <label style={{ display: "grid", gap: 2 }}>
             <span style={{ fontSize: "0.75rem", color: "#555" }}>Target</span>
             <input value={exTarget} onChange={(e) => setExTarget(e.target.value)} placeholder="12" style={{ width: 72 }} />
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Единица</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Unit</span>
             <select value={exUnit} onChange={(e) => setExUnit(e.target.value as ExecutiveKpiTargetV1["unit"])}>
               <option value="count">count</option>
               <option value="cents">cents</option>
@@ -362,32 +362,32 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
             </select>
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Период</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Period</span>
             <input value={exPeriod} onChange={(e) => setExPeriod(e.target.value)} placeholder="2026-03" style={{ width: 88 }} />
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Факт (опц.)</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Actual (opt.)</span>
             <input value={exActual} onChange={(e) => setExActual(e.target.value)} style={{ width: 72 }} />
           </label>
           <label style={{ display: "grid", gap: 2, flex: "1 1 160px" }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Заметка</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Note</span>
             <input value={exNotes} onChange={(e) => setExNotes(e.target.value)} />
           </label>
           <button type="button" disabled={busy} onClick={() => void onAddExecTarget()}>
-            Добавить цель
+            Add target
           </button>
         </div>
         {dash.executiveTargets.length === 0 ? (
-          <div style={{ color: "#666" }}>Целей пока нет.</div>
+          <div style={{ color: "#666" }}>No targets yet.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: "4px 8px" }}>Владелец</th>
+                <th style={{ padding: "4px 8px" }}>Owner</th>
                 <th style={{ padding: "4px 8px" }}>KPI</th>
-                <th style={{ padding: "4px 8px" }}>Период</th>
+                <th style={{ padding: "4px 8px" }}>Period</th>
                 <th style={{ padding: "4px 8px" }}>Target</th>
-                <th style={{ padding: "4px 8px" }}>Факт</th>
+                <th style={{ padding: "4px 8px" }}>Actual</th>
                 <th style={{ padding: "4px 8px" }} />
               </tr>
             </thead>
@@ -409,7 +409,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
                   </td>
                   <td style={{ padding: "4px 8px" }}>
                     <button type="button" disabled={busy} onClick={() => void onDeleteExec(row.id)}>
-                      Удалить
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -420,42 +420,42 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       </section>
 
       <section>
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>Ручной журнал</div>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Manual ledger</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-end", marginBottom: 8 }}>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Тип</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Type</span>
             <select value={kind} onChange={(e) => setKind(e.target.value as "expense" | "income")}>
-              <option value="expense">Расход</option>
-              <option value="income">Доход</option>
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
             </select>
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Сумма</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Amount</span>
             <input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={{ width: 96 }} />
           </label>
           <label style={{ display: "grid", gap: 2 }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Валюта</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Currency</span>
             <input value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: 64 }} />
           </label>
           <label style={{ display: "grid", gap: 2, flex: "1 1 160px" }}>
-            <span style={{ fontSize: "0.75rem", color: "#555" }}>Описание</span>
+            <span style={{ fontSize: "0.75rem", color: "#555" }}>Description</span>
             <input value={label} onChange={(e) => setLabel(e.target.value)} />
           </label>
           <button type="button" disabled={busy} onClick={() => void onAdd()}>
-            Добавить
+            Add
           </button>
         </div>
 
         {dash.manualEntries.length === 0 ? (
-          <div style={{ color: "#666" }}>Записей нет.</div>
+          <div style={{ color: "#666" }}>No entries yet.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: "4px 8px" }}>Дата</th>
-                <th style={{ padding: "4px 8px" }}>Тип</th>
-                <th style={{ padding: "4px 8px" }}>Сумма</th>
-                <th style={{ padding: "4px 8px" }}>Описание</th>
+                <th style={{ padding: "4px 8px" }}>Date</th>
+                <th style={{ padding: "4px 8px" }}>Type</th>
+                <th style={{ padding: "4px 8px" }}>Amount</th>
+                <th style={{ padding: "4px 8px" }}>Description</th>
                 <th style={{ padding: "4px 8px" }} />
               </tr>
             </thead>
@@ -463,12 +463,12 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
               {dash.manualEntries.map((row) => (
                 <tr key={row.id} style={{ borderBottom: "1px solid #eee" }}>
                   <td style={{ padding: "4px 8px" }}>{row.occurredAt.slice(0, 10)}</td>
-                  <td style={{ padding: "4px 8px" }}>{row.kind === "income" ? "Доход" : "Расход"}</td>
+                  <td style={{ padding: "4px 8px" }}>{row.kind === "income" ? "Income" : "Expense"}</td>
                   <td style={{ padding: "4px 8px" }}>{formatCents(row.amountCents, row.currency)}</td>
                   <td style={{ padding: "4px 8px" }}>{row.label}</td>
                   <td style={{ padding: "4px 8px" }}>
                     <button type="button" disabled={busy} onClick={() => void onDelete(row.id)}>
-                      Удалить
+                      Delete
                     </button>
                   </td>
                 </tr>

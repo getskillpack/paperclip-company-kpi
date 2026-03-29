@@ -30,16 +30,16 @@ export type DashboardParams = {
 
 export type ExecutiveKpiOwnerRoleTag = "cto" | "cmo" | "cfo" | "coo" | "ceo" | "other";
 
-/** Цель для C-level (или другой роли), задаваемая CEO/board; actual в MVP вручную. */
+/** C-level (or other role) target set by CEO/board; MVP uses a manual actual. */
 export type ExecutiveKpiTargetV1 = {
   id: string;
-  /** Отображаемое имя владельца, напр. «CTO», «CMO — контент». */
+  /** Display name for the owner, e.g. "CTO", "CMO — content". */
   ownerLabel: string;
   ownerRoleTag?: ExecutiveKpiOwnerRoleTag;
   kpiLabel: string;
   targetValue: number;
   unit: "count" | "cents" | "percent" | "days" | "score";
-  /** Период: YYYY-MM или произвольная метка (Q2-2026). */
+  /** Period: YYYY-MM or an arbitrary label (e.g. Q2-2026). */
   periodLabel: string;
   actualValue?: number | null;
   notes?: string;
@@ -47,7 +47,7 @@ export type ExecutiveKpiTargetV1 = {
   updatedAt: string;
 };
 
-/** Снимок лимита/факта по агенту из host API (текущий биллинговый месяц инстанса). */
+/** Per-agent budget/spend snapshot from the host API (current billing month of the instance). */
 export type AgentBudgetSnapshotV1 = {
   agentId: string;
   name: string;
@@ -58,8 +58,8 @@ export type AgentBudgetSnapshotV1 = {
 };
 
 /**
- * Сверка суммы `spentMonthlyCents` по агентам с rollup cost_event за один UTC-календарный месяц.
- * См. docs/IMPLEMENTATION_PLAN.md — фаза C (допущения).
+ * Compares the sum of agents' `spentMonthlyCents` with cost_event rollup for one UTC calendar month.
+ * See docs/IMPLEMENTATION_PLAN.md — phase C (assumptions).
  */
 export type RollupAgentsReconciliationV1 = {
   comparableMonth: string | null;
