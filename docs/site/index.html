@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Company KPI for Paperclip · getskillpack</title>
+    <meta
+      name="description"
+      content="Paperclip plugin: roll up cost_event streams, manual ledger, executive KPI targets — one dashboard for operators and leadership."
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0c0f14;
+        --panel: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.12);
+        --text: #e8ecf1;
+        --muted: #9aa3af;
+        --accent: #6ea8fe;
+        --accent-2: #a78bfa;
+        --radius: 14px;
+        --max: 920px;
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --panel: #ffffff;
+          --border: #e3e7ee;
+          --text: #111827;
+          --muted: #5b6472;
+          --accent: #2563eb;
+          --accent-2: #7c3aed;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(1200px 600px at 10% -10%, rgba(110, 168, 254, 0.25), transparent 55%),
+          radial-gradient(900px 500px at 90% 0%, rgba(167, 139, 250, 0.22), transparent 50%), var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .wrap {
+        max-width: var(--max);
+        margin: 0 auto;
+        padding: 2.25rem 1.25rem 4rem;
+      }
+      header {
+        display: grid;
+        gap: 1rem;
+        padding: 2rem;
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) + 4px);
+        background: linear-gradient(135deg, var(--panel), transparent);
+        backdrop-filter: blur(8px);
+      }
+      .eyebrow {
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(1.75rem, 4vw, 2.35rem);
+        line-height: 1.15;
+      }
+      .sub {
+        margin: 0;
+        font-size: 1.05rem;
+        color: var(--muted);
+        max-width: 62ch;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .btn.primary {
+        border-color: transparent;
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        color: #fff;
+      }
+      .btn.primary:hover {
+        filter: brightness(1.05);
+        text-decoration: none;
+      }
+      nav.lang {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 2rem 0 1rem;
+      }
+      nav.lang a {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        font-size: 0.85rem;
+        color: var(--text);
+      }
+      nav.lang a:hover {
+        text-decoration: none;
+        border-color: var(--accent);
+      }
+      section {
+        margin-top: 1.75rem;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--panel);
+      }
+      section h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1.15rem;
+      }
+      section p {
+        margin: 0.5rem 0 0;
+        color: var(--muted);
+      }
+      ul {
+        margin: 0.75rem 0 0;
+        padding-left: 1.2rem;
+        color: var(--muted);
+      }
+      footer {
+        margin-top: 2.5rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        display: grid;
+        gap: 0.5rem;
+      }
+      .star-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        margin-top: 0.5rem;
+      }
+      iframe {
+        border: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="eyebrow">Open source · Paperclip plugin</div>
+        <h1>Company-wide KPI and spend, inside Paperclip.</h1>
+        <p class="sub">
+          Roll up <code>cost_event</code> streams, add a manual ledger, and track executive targets — one dashboard for operators and
+          leadership.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/getskillpack/paperclip-company-kpi">View on GitHub</a>
+          <a
+            class="btn"
+            href="https://github.com/getskillpack/paperclip-company-kpi/blob/main/docs/IMPLEMENTATION_PLAN.md"
+            >Implementation plan</a
+          >
+        </div>
+        <div class="star-row">
+          <iframe
+            title="Star paperclip-company-kpi on GitHub"
+            src="https://ghbtns.com/github-btn.html?user=getskillpack&amp;repo=paperclip-company-kpi&amp;type=star&amp;count=true&amp;size=large"
+            width="170"
+            height="30"
+          ></iframe>
+          <span style="color: var(--muted); font-size: 0.9rem">Stars help other teams discover the plugin.</span>
+        </div>
+      </header>
+
+      <nav class="lang" aria-label="Languages">
+        <a href="#en">English</a>
+        <a href="#es">Español</a>
+        <a href="#pt">Português</a>
+        <a href="#zh">中文</a>
+        <a href="#de">Deutsch</a>
+      </nav>
+
+      <section id="en">
+        <h2>English</h2>
+        <p>
+          <strong>Problem:</strong> spend and KPIs are scattered across logs and spreadsheets. <strong>Solution:</strong> trusted plugin
+          state in Paperclip — monthly rollups, auditable ledger, C-level targets. MIT licensed.
+        </p>
+        <ul>
+          <li>Monthly cost rollups from <code>cost_event.created</code></li>
+          <li>Manual income / expense lines</li>
+          <li>Executive KPI registry (see repo docs)</li>
+        </ul>
+      </section>
+
+      <section id="es">
+        <h2>Español</h2>
+        <p>
+          Agrega gastos de agentes, lleva un libro manual y alinea metas ejecutivas en un solo panel de Paperclip. Código abierto (MIT).
+        </p>
+      </section>
+
+      <section id="pt">
+        <h2>Português (Brasil)</h2>
+        <p>
+          Consolide custos, use um razão manual e acompanhe metas de liderança dentro do Paperclip. Código aberto (MIT).
+        </p>
+      </section>
+
+      <section id="zh">
+        <h2>中文（简体）</h2>
+        <p>在 Paperclip 中汇总成本事件、维护手工台账，并对齐高管 KPI。开源（MIT）。</p>
+      </section>
+
+      <section id="de">
+        <h2>Deutsch</h2>
+        <p>
+          Kostenströme bündeln, manuelles Journal pflegen und Führungs-KPIs in Paperclip abbilden. Open Source (MIT).
+        </p>
+      </section>
+
+      <footer>
+        <div>
+          <a href="https://github.com/getskillpack">getskillpack</a> ·
+          <a href="https://github.com/getskillpack/paperclip-company-kpi/issues">Issues</a> ·
+          <a href="https://github.com/getskillpack/paperclip-company-kpi">Star the repository</a>
+        </div>
+        <div>Static preview — source copy also lives in <code>docs/LANDING.md</code>.</div>
+      </footer>
+    </div>
+  </body>
+</html>

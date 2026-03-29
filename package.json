@@ -4,6 +4,14 @@
   "type": "module",
   "private": true,
   "description": "Paperclip plugin: company KPI / cost rollup + manual ledger",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getskillpack/paperclip-company-kpi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/getskillpack/paperclip-company-kpi/issues"
+  },
+  "homepage": "https://github.com/getskillpack/paperclip-company-kpi",
   "scripts": {
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
